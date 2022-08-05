@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="连接方式：" />
+
+        <Spinner
+            android:id="@+id/spinner_connect_way"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_select_device"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/ll_serial_port_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_open_serial_port_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="串口列表" />
+
+            <Button
+                android:id="@+id/btn_open_serial_port_config"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="串口配置" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_usb_serial_port_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btn_open_usb_serial_port_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Usb列表" />
+
+            <Button
+                android:id="@+id/btn_open_usb_serial_port_config"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="串口配置" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_open_usb_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Usb列表"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_open_bluetooth_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="打开蓝牙列表"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_open_wifi_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Wifi连接配置"
+            android:visibility="gone" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btn_connect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="连接" />
+
+        <Button
+            android:id="@+id/btn_disconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="断开" />
+        <Button
+            android:id="@+id/btn_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="清空" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btn_test_server"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="启动本地测试服务" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/send_text"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:hint="发送数据"
+                android:singleLine="true" />
+
+            <ImageButton
+                android:id="@+id/btn_send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_send_white_24dp"
+                 />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="日志" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
+            android:layout_width="match_parent"
+            android:background="@color/white"
+            android:overScrollMode="never"
+            android:layout_height="match_parent"
+            >
+
+            <TextView
+                android:id="@+id/tv_msg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="#666"
+                android:textSize="14sp" />
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+</LinearLayout>

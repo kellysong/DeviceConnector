@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8.0dip"
+    android:layout_marginTop="10.0dip"
+    android:layout_marginEnd="8.0dip"
+    android:background="@drawable/white_round_8dp_bg"
+    android:paddingBottom="10.0dip"
+    android:tag="layout/device_item_0">
+
+    <TextView
+        android:id="@+id/tv_driver"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16.0dip"
+        android:layout_marginTop="12.0dip"
+        android:tag="binding_1"
+        android:textColor="@color/cl_3A3A3B"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/tv_title_path"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16.0dip"
+        android:text="路径"
+        android:textColor="@color/subTextColor"
+        app:layout_constraintStart_toStartOf="@id/tv_driver"
+        app:layout_constraintTop_toBottomOf="@id/tv_driver" />
+
+    <TextView
+        android:id="@+id/tv_title_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2.0dip"
+        android:text="名称"
+        android:textColor="@color/subTextColor"
+        app:layout_constraintStart_toStartOf="@id/tv_driver"
+        app:layout_constraintTop_toBottomOf="@id/tv_title_path" />
+
+    <TextView
+        android:id="@+id/tv_title_manufacturer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2.0dip"
+        android:text="厂商"
+        android:textColor="@color/subTextColor"
+        app:layout_constraintStart_toStartOf="@id/tv_driver"
+        app:layout_constraintTop_toBottomOf="@id/tv_title_name" />
+
+    <TextView
+        android:id="@+id/tv_title_vendorId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2.0dip"
+        android:text="Vendor"
+        android:textColor="@color/subTextColor"
+        app:layout_constraintStart_toStartOf="@id/tv_driver"
+        app:layout_constraintTop_toBottomOf="@id/tv_title_manufacturer" />
+
+    <TextView
+        android:id="@+id/tv_title_productId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2.0dip"
+        android:text="Product"
+        android:textColor="@color/subTextColor"
+        app:layout_constraintStart_toStartOf="@id/tv_driver"
+        app:layout_constraintTop_toBottomOf="@id/tv_title_vendorId" />
+
+    <TextView
+        android:id="@+id/tv_path"
+        android:layout_width="0.0dip"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10.0dip"
+        android:layout_marginEnd="10.0dip"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:tag="binding_2"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tv_title_productId"
+        app:layout_constraintTop_toTopOf="@id/tv_title_path" />
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="0.0dip"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:tag="binding_3"
+        android:textColor="@color/black"
+        android:textSize="13.0sp"
+        app:layout_constraintBottom_toBottomOf="@id/tv_title_name"
+        app:layout_constraintEnd_toEndOf="@id/tv_path"
+        app:layout_constraintStart_toStartOf="@id/tv_path"
+        app:layout_constraintTop_toTopOf="@id/tv_title_name" />
+
+    <TextView
+        android:id="@+id/tv_manufacturer"
+        android:layout_width="0.0dip"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:tag="binding_4"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="@id/tv_path"
+        app:layout_constraintStart_toStartOf="@id/tv_path"
+        app:layout_constraintTop_toTopOf="@id/tv_title_manufacturer" />
+
+    <TextView
+        android:id="@+id/tv_vendorId"
+        android:layout_width="0.0dip"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:tag="binding_5"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="@id/tv_path"
+        app:layout_constraintStart_toStartOf="@id/tv_path"
+        app:layout_constraintTop_toTopOf="@id/tv_title_vendorId" />
+
+    <TextView
+        android:id="@+id/tv_productId"
+        android:layout_width="0.0dip"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:tag="binding_6"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="@id/tv_path"
+        app:layout_constraintStart_toStartOf="@id/tv_path"
+        app:layout_constraintTop_toTopOf="@id/tv_title_productId" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:background="#fff2f2f2"
+    android:orientation="vertical"
+   >
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/ToolBar"
+        app:title="串口设置"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:id="@+id/itemBaudRate"
+                android:layout_width="match_parent"
+                android:layout_height="50.0dip"
+                android:layout_marginTop="10.0dip"
+                android:background="@drawable/list_item_bg_white">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20.0dip"
+                    android:gravity="center_vertical"
+                    android:text="波特率"
+                    android:textColor="@color/textColor" />
+
+                <TextView
+                    android:id="@+id/tvBaudRate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="20.0dip"
+                    android:textColor="@color/subTextColor"
+                    android:textSize="12.0sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.0px"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/divider" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/itemDataBits"
+                android:layout_width="match_parent"
+                android:layout_height="50.0dip"
+                android:background="@drawable/list_item_bg_white">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20.0dip"
+                    android:gravity="center_vertical"
+                    android:text="数据位"
+                    android:textColor="@color/textColor" />
+
+                <TextView
+                    android:id="@+id/tvDataBits"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="20.0dip"
+                    android:textColor="@color/subTextColor"
+                    android:textSize="12.0sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.0px"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/divider" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/itemStopBits"
+                android:layout_width="match_parent"
+                android:layout_height="50.0dip"
+                android:background="@drawable/list_item_bg_white">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20.0dip"
+                    android:gravity="center_vertical"
+                    android:text="停止位"
+                    android:textColor="@color/textColor" />
+
+                <TextView
+                    android:id="@+id/tvStopBits"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="20.0dip"
+                    android:textColor="@color/subTextColor"
+                    android:textSize="12.0sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.0px"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/divider" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/itemParity"
+                android:layout_width="match_parent"
+                android:layout_height="50.0dip"
+                android:background="@drawable/list_item_bg_white">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20.0dip"
+                    android:gravity="center_vertical"
+                    android:text="校验位"
+                    android:textColor="@color/textColor" />
+
+                <TextView
+                    android:id="@+id/tvParity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="20.0dip"
+                    android:textColor="@color/subTextColor"
+                    android:textSize="12.0sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.0px"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/divider" />
+            </RelativeLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -1,0 +1,38 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'//this
+group='com.github.kellysong'//this
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion '29.0.3'
+
+
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:15.0'
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.github.mik3y:usb-serial-for-android:3.4.3'
+    implementation 'com.github.licheedev:Android-SerialPort-API:2.0.0'
+
+}

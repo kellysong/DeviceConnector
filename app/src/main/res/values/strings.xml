@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DeviceConnector</string>
+    <string name="loading_canceling">正在取消...</string>
+    <string name="loading_processing">加载中...</string>
+</resources>

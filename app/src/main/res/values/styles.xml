@@ -1,0 +1,62 @@
+<resources>
+
+    <!-- 使用这个Theme.AppCompat.Light.DarkActionBar导致预览布局时显示ActionBarOverlayLayout -->
+    <style name="AppTheme" parent="Base.Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textAllCaps">false</item><!--解决字母大写问题-->
+    </style>
+    <style name="AppTheme.NoActionBar"  >
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="MyEditText" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">#FFFFFF</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
+    </style>
+
+
+    <style name="ToolBarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="colorControlNormal">@color/white</item><!--    默认灰色-->
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+
+    <style name="ToolBar" >
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">?attr/actionBarSize</item>
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="navigationIcon">?attr/homeAsUpIndicator</item>
+        <item name="android:theme">@style/ToolBarTheme</item>
+        <item name="titleTextColor">@android:color/white</item>
+        <item name="titleTextAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="popupTheme">@style/AppTheme.PopupOverlay</item>
+    </style>
+
+
+    <style name="AVLoadingIndicatorView">
+        <item name="indicatorName">BallPulseIndicator</item>
+        <item name="maxHeight">@dimen/dp_48</item>
+        <item name="maxWidth">@dimen/dp_48</item>
+        <item name="minHeight">@dimen/dp_48</item>
+        <item name="minWidth">@dimen/dp_48</item>
+    </style>
+
+
+    <!-- 自定义Loading Dialog -->
+    <style name="LoadingDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+</resources>

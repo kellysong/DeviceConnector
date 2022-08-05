@@ -1,0 +1,55 @@
+ext {
+    android = [
+            compileSdkVersion: 29,
+            buildToolsVersion: "29.0.3",
+            minSdkVersion    : 17,
+            targetSdkVersion : 29,
+            versionCode      : 1,
+            versionName      : "1.0.0",
+            applicationId    : "com.sjl.deviceconnector.test"
+    ]
+
+
+    version = [
+            appcompatVersion       : "1.2.0",
+            recyclerviewVersion    : "1.1.0",
+            constraintlayoutVersion: "2.0.4",
+            material               : "1.3.0",
+            multidex               : "2.0.1",
+            roomVersion            : "2.2.5",
+            aviLoadingVersion      : "2.1.3",
+            autosizeVersion        : "1.1.2",
+
+            leakcanaryVersion      : "1.6.1",
+            buglySDKVersion        : "3.2.422",
+            buglyNDKVersion        : "3.7.5",
+            buglyUpgradeVersion    : "1.6.1"
+    ]
+
+    dependencies = [
+            "appcompat"              : "androidx.appcompat:appcompat:${version.appcompatVersion}",
+            "recyclerview"           : "androidx.recyclerview:recyclerview:${version.recyclerviewVersion}",
+            "constraintlayout"       : "androidx.constraintlayout:constraintlayout:${version.constraintlayoutVersion}",
+
+            room                     : "androidx.room:room-runtime:${version.roomVersion}",
+            multidex                 : "androidx.multidex:multidex:${version.multidex}",
+            aviLoading               : "com.wang.avi:library:${version.aviLoadingVersion}",
+            autosize                 : "me.jessyan:autosize:${version.autosizeVersion}",
+
+
+
+            "bugly"                  : "com.tencent.bugly:crashreport:${version.buglySDKVersion}",
+            "bugly_nativecrashreport": "com.tencent.bugly:nativecrashreport:${version.buglyNDKVersion}",
+            "bugly_upgrade"          : "com.tencent.bugly:crashreport_upgrade:${version.buglyUpgradeVersion}",
+    ]
+    annotationProcessor = [
+            "room-compiler": "androidx.room:room-compiler:${version.roomVersion}"
+    ]
+
+    debugDependencies = [
+            "leakcanary": "com.squareup.leakcanary:leakcanary-android:${version.leakcanaryVersion}"
+    ]
+    releaseDependencies = [
+            "leakcanary": "com.squareup.leakcanary:leakcanary-android-no-op:${version.leakcanaryVersion}"
+    ]
+}

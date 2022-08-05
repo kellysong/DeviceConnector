@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:background="#fff2f2f2"
+    android:orientation="vertical"
+   >
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/ToolBar"
+        app:title="Wifi设置"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical">
+
+
+            <RelativeLayout
+                android:id="@+id/itemIp"
+                android:layout_width="match_parent"
+                android:layout_height="50.0dip"
+                android:layout_marginTop="10.0dip"
+               >
+
+                <TextView
+                    android:id="@+id/tv_ip"
+                    android:layout_width="@dimen/dp_50"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20.0dip"
+                    android:gravity="center_vertical"
+                    android:text="ip"
+                    android:textColor="@color/textColor" />
+
+                <EditText
+                    android:id="@+id/et_ip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="20.0dip"
+                    android:maxLength="15"
+                    android:hint="请输入ip地址"
+                    android:layout_toRightOf="@id/tv_ip"
+                    android:textColor="@color/subTextColor"
+                    android:textSize="12.0sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.0px"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/divider" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/itemPort"
+                android:layout_width="match_parent"
+                android:layout_height="50.0dip"
+                >
+
+                <TextView
+                    android:id="@+id/tv_port"
+                    android:layout_width="@dimen/dp_50"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="20.0dip"
+                    android:gravity="center_vertical"
+                    android:text="端口号"
+                    android:textColor="@color/textColor" />
+
+                <EditText
+                    android:id="@+id/et_port"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="20.0dip"
+                    android:layout_toRightOf="@id/tv_port"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:hint="请输入端口号"
+                    android:textColor="@color/subTextColor"
+                    android:textSize="12.0sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1.0px"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/divider" />
+            </RelativeLayout>
+
+
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
