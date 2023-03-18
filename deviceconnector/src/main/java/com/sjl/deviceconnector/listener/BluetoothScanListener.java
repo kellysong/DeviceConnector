@@ -2,6 +2,8 @@ package com.sjl.deviceconnector.listener;
 
 import android.bluetooth.BluetoothDevice;
 
+import com.sjl.deviceconnector.entity.BluetoothScanResult;
+
 /**
  * 蓝牙扫描监听
  *
@@ -12,7 +14,7 @@ import android.bluetooth.BluetoothDevice;
  * @copyright(C) 2022 song
  */
 public interface BluetoothScanListener {
-    void onDeviceFound(BluetoothDevice bluetoothDevice);
+    void onDeviceFound(BluetoothScanResult bluetoothScanResult);
 
     void onScanFinish();
 

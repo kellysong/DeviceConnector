@@ -11,6 +11,28 @@ android {
         versionCode 1
         versionName "1.0.0"
         multiDexEnabled true
+
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        def UUID_SERVICE = properties.getProperty('UUID_SERVICE')
+        if (UUID_SERVICE == null){
+            buildConfigField "String", "uuid_service","\"0000fff1-0000-1000-8000-00805f9b34fb\""
+        }else {
+            buildConfigField "String", "uuid_service", UUID_SERVICE
+        }
+        def UUID_CHARACTER_READ = properties.getProperty('UUID_CHARACTER_READ')
+        if (UUID_CHARACTER_READ == null){
+            buildConfigField "String", "uuid_character_read","\"0000ff11-0000-1000-8000-00805f9b34fb\""
+        }else {
+            buildConfigField "String", "uuid_character_read",UUID_CHARACTER_READ
+        }
+        def UUID_CHARACTER_WRITE = properties.getProperty('UUID_CHARACTER_WRITE')
+        if (UUID_CHARACTER_WRITE == null){
+            buildConfigField "String", "uuid_character_write","\"0000ff12-0000-1000-8000-00805f9b34fb\""
+        }else {
+            buildConfigField "String", "uuid_character_write", UUID_CHARACTER_WRITE
+        }
+
     }
     buildTypes {
         release {
@@ -28,6 +50,7 @@ android {
 }
 
 
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
@@ -36,6 +59,7 @@ dependencies {
     implementation 'com.github.kellysong.my-common:base-core:2.3.4'
     implementation rootProject.ext.dependencies["autosize"]
     implementation rootProject.ext.dependencies["aviLoading"]
+    implementation rootProject.ext.debugDependencies["leakcanary"]
     //设备连接库
     implementation project(':deviceconnector')
 

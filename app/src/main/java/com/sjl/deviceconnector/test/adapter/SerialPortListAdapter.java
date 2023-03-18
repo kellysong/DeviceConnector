@@ -21,7 +21,7 @@ import androidx.annotation.Nullable;
  */
 public class SerialPortListAdapter extends BaseQuickAdapter<String, BaseViewHolder> {
     public SerialPortListAdapter(@Nullable List<String> data) {
-        super(R.layout.serial_port_list_recyle_item, data);
+        super(R.layout.serial_port_list_recycle_item, data);
     }
 
     @Override

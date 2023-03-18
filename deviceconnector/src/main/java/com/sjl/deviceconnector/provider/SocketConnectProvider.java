@@ -44,6 +44,10 @@ public class SocketConnectProvider extends BaseIoConnectProvider {
 
     @Override
     public int open() {
+        int state = getState();
+        if (state == ErrorCode.ERROR_OK) {
+            return state;
+        }
         mSocket = new Socket();
         SocketAddress address = new InetSocketAddress(ip, port);//socket连接地址
         try {

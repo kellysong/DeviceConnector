@@ -53,13 +53,19 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
     BaseConnectProvider baseConnectProvider = new UsbConnectProvider(int vendorId, int productId);
     //or
     BaseConnectProvider baseConnectProvider = new UsbConnectProvider(UsbDevice usbDevice);
-    //蓝牙
+    //默认蓝牙 Com
     BaseConnectProvider baseConnectProvider = new BluetoothConnectProvider(BluetoothDevice bluetoothDevice);
     BaseConnectProvider baseConnectProvider = new BluetoothConnectProvider(String address);
+    //指定蓝牙服务UUID
+    BaseConnectProvider baseConnectProvider = new BluetoothConnectProvider(BluetoothDevice bluetoothDevice, String uuid);
+    BaseConnectProvider baseConnectProvider = new BluetoothConnectProvider(String address, String uuid);
     
     //Wifi
     BaseConnectProvider baseConnectProvider = new WifiConnectProvider(String host, int port, int connectTimeout, int readTimeout);
 
+    //特别地：蓝牙Ble
+    BluetoothLeConnectProvider connectProvider = new BluetoothLeConnectProvider(BluetoothDevice bluetoothDevice);
+    BluetoothLeConnectProvider connectProvider = new BluetoothLeConnectProvider(String address);
 
 **2.打开连接**
 
@@ -68,6 +74,35 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 **3.写和读数据**
 
     baseConnectProvider.read(byte[] sendParams, byte[] buffer, int timeout);
+
+**3.1 蓝牙Ble通讯**
+
+蓝牙Ble,与其它连接方式不好统一，故做特殊处理
+
+    //特征写请求,其它请求创建不同的实例发送即可
+    CharacteristicWriteRequest bluetoothLeRequest = new CharacteristicWriteRequest();
+    bluetoothLeRequest.setService(UUID_SERVICE);
+    bluetoothLeRequest.setCharacter(UUID_CHARACTER_WRITE);
+    bluetoothLeRequest.setBytes(sendData);
+    BluetoothLeResponse response = new BluetoothLeResponse();
+    bluetoothLeRequest.sendRequest(bluetoothLeRequest,response,5*1000);
+
+    //蓝牙ble监听服务端(也叫从机/外围设备/peripheral)数据，分两步操作
+
+    //1.监听通知信息
+     bluetoothLeConnectProvider.setBluetoothLeNotifyListener(new BluetoothLeNotifyListener() {
+                            @Override
+                            public void onNotify(UUID serviceId, UUID characterId, byte[] value) {
+                                
+                            }
+                        });
+	//2.开启通知
+    NotifyRequest notifyRequest = new NotifyRequest();
+    notifyRequest.setService(UUID_SERVICE);
+    notifyRequest.setCharacter(UUID_CHARACTER_READ);
+    notifyRequest.setEnable(true);
+    BluetoothLeResponse response = new BluetoothLeResponse();
+    connectProvider.sendRequest(notifyRequest,response,5*1000);
 
 **4.关闭连接**
 
@@ -81,11 +116,11 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 4. 传统串口连接需要Root,免Root连接建议使用Usb Com
 5. Usb Com和Usb连接之前需要先申请Usb权限，再调用open，不然出现首次连接失败;需要注意的是，正常申请一次权限就可以，但是Usb设备被拔出或者应用卸载了，连接之前需要再次申请权限
 6. Usb连接传输模式、传输速度的不同，要注意发送数据包的大小，这里的包指一次传输数据的大小，包大小受限于端点的最大包大小
-7. Usb Com和Usb连接如果的read()方法的逻辑需要改变或者需要一次发送，多次循环读取（数据延迟返回）才能把数据读取完整的话，建议继承**连接提供者**，覆写read()方法
-8. 蓝牙连接暂时支持经典蓝牙连接，不支持低功耗蓝牙(Ble);蓝牙搜索在Android 6.0以上需要申请定位权限；高版本蓝牙连接会弹出蓝牙配对授权窗口,建议在蓝牙设置里面进行配对和取消配对，配对一次即可；暂时不支持Android 12以上蓝牙打开和扫描，如需要自行放开AndroidManifest.xml权限和适配，然后再使用BaseConnectProvider
+7. Usb Com和Usb连接如果的read()方法的逻辑需要改变或者需要一次发送，多次循环读取才能把数据读取完整的话，建议继承**连接提供者**，覆写read()方法进行一次写多次读
+8. 蓝牙搜索在Android 6.0以上需要申请定位权限；高版本蓝牙连接会弹出蓝牙配对授权窗口,建议在蓝牙设置里面进行配对和取消配对，配对一次即可；
 9. Wifi连接需要网络权限
 10. App示例中，使用手机就可以模拟测试Wifi连接和蓝牙连接，前提是先启动服务；串口和USB测试需要相应的设备连接
-
+11. 已集成网络、蓝牙（包括ble）、Usb定位权限（权限申请由调用者申请）
 
 # License
 

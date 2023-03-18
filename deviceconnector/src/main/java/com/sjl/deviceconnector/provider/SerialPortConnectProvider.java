@@ -31,6 +31,10 @@ public class SerialPortConnectProvider extends BaseIoConnectProvider {
 
     @Override
     public int open() {
+        int state = getState();
+        if (state == ErrorCode.ERROR_OK) {
+            return state;
+        }
         try {
             mSerialPort = SerialPort.newBuilder(serialPortConfig.getDevice(), serialPortConfig.getBaudRate())
                     .parity(serialPortConfig.getParity())

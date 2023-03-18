@@ -26,6 +26,34 @@
         android:layout_marginTop="@dimen/dp_5"
         android:layout_marginLeft="@dimen/dp_10"
         tools:text="123456" />
+
+    <TextView
+        android:id="@+id/tv_raw_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/dp_13"
+        android:text="Raw data"
+        android:layout_below="@id/tv_address"
+        android:textColor="@color/colorPrimary"
+        android:layout_alignParentRight="true"
+        android:padding="@dimen/dp_6"
+        android:layout_marginLeft="@dimen/dp_10"
+        android:visibility="gone"
+        android:gravity="center"
+        android:layout_marginTop="1dp"
+        android:background="?android:attr/selectableItemBackground"
+      />
+
+    <TextView
+        android:id="@+id/tv_rssi"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="@dimen/dp_10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/dp_14"
+        tools:text="1"
+        android:gravity="center"
+        />
     <TextView
         android:id="@+id/tv_state"
         android:layout_width="wrap_content"
@@ -34,6 +62,7 @@
         android:layout_alignParentRight="true"
         android:layout_marginRight="@dimen/dp_10"
         android:layout_centerVertical="true"
+        android:layout_below="@id/tv_rssi"
         android:textSize="@dimen/dp_14"
         android:textColor="@color/red"
         tools:text="未配对" />

@@ -1,27 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sjl.deviceconnector.test">
-    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- 蓝牙权限 start -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <!--Android6.0-11.0 搜索蓝牙需要，因为蓝牙可以被用来定位，所以需要定位权限-->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <!--Android12 的蓝牙权限 -->
-<!-- BLUETOOTH_CONNECT打开或连接， BLUETOOTH_SCAN扫描  -->
-   <!-- <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>-->
-    <uses-feature
-        android:name="android.hardware.bluetooth_le"
-        android:required="true" />
-    <!-- 蓝牙权限 end -->
-    <!-- Usb start -->
-    <uses-feature android:name="android.hardware.usb.host" android:required="true"/>
-    <!-- Usb end -->
 
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

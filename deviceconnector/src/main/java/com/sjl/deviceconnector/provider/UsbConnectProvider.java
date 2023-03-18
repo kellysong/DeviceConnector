@@ -18,7 +18,7 @@ import com.sjl.deviceconnector.util.LogUtils;
 import java.io.IOException;
 
 /**
- * USB连接提供者(基于Android USB封装,批量传输)
+ * USB连接提供者(基于Android USB封装,批量传输 bulkTransfer,不是控制传输)
  * <p>由于不同设备协议不同和使用传输方式不同，如果发送的数据，无法正常返回想要结果，建议继承此类重写{@link UsbConnectProvider#write(byte[], int)}和{@link UsbConnectProvider#read(byte[], byte[], int)}</p>
  * <p>最后，按照设备协议组装数据及进行读写操作</p>
  *
@@ -76,6 +76,10 @@ public class UsbConnectProvider extends BaseConnectProvider {
 
     @Override
     public int open() {
+        int state = getState();
+        if (state == ErrorCode.ERROR_OK) {
+            return state;
+        }
         if (mUsbDevice == null) {
             LogUtils.e("connection failed: device not found");
             return ErrorCode.ERROR_DEVICE_NOT_FIND;

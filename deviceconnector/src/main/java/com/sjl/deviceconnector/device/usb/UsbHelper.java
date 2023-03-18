@@ -214,6 +214,9 @@ public class UsbHelper implements ReceiverObservable {
                 List<UsbDevice> deviceList = getDeviceList();
                 UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                 LogUtils.w("connected:" + connected + ",设备数：" + deviceList.size());
+                if (deviceList == null || deviceList.isEmpty()){
+                    return;
+                }
                 if (connectedListener != null){
                     connectedListener.onResult(device,connected);
                 }

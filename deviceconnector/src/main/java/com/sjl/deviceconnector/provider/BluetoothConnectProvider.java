@@ -25,6 +25,7 @@ public class BluetoothConnectProvider extends BaseIoConnectProvider {
     public final static String BLUETOOTH_UUID = "00001101-0000-1000-8000-00805F9B34FB";
     private final BluetoothDevice mBluetoothDevice;
     private BluetoothSocket mBluetoothSocket;
+    private String uuid = BLUETOOTH_UUID;
 
 
     /**
@@ -33,11 +34,7 @@ public class BluetoothConnectProvider extends BaseIoConnectProvider {
      * @param address 蓝牙mac地址
      */
     public BluetoothConnectProvider(String address) {
-        BluetoothAdapter defaultAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (defaultAdapter == null){
-            throw new NullPointerException("设备不支持蓝牙");
-        }
-        this.mBluetoothDevice = defaultAdapter.getRemoteDevice(address);
+        this(address, BLUETOOTH_UUID);
     }
 
     /**
@@ -46,15 +43,45 @@ public class BluetoothConnectProvider extends BaseIoConnectProvider {
      * @param bluetoothDevice 蓝牙设备
      */
     public BluetoothConnectProvider(BluetoothDevice bluetoothDevice) {
+        this(bluetoothDevice, BLUETOOTH_UUID);
+    }
+
+    /**
+     * 根据指定蓝牙服务UUID,初始化一个蓝牙提供者
+     *
+     * @param address
+     * @param uuid
+     */
+    public BluetoothConnectProvider(String address, String uuid) {
+        BluetoothAdapter defaultAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (defaultAdapter == null) {
+            throw new NullPointerException("设备不支持蓝牙");
+        }
+        this.mBluetoothDevice = defaultAdapter.getRemoteDevice(address);
+        this.uuid = uuid;
+    }
+
+    /**
+     * 根据指定蓝牙服务UUID,初始化一个蓝牙提供者
+     *
+     * @param bluetoothDevice
+     * @param uuid
+     */
+    public BluetoothConnectProvider(BluetoothDevice bluetoothDevice, String uuid) {
         this.mBluetoothDevice = bluetoothDevice;
+        this.uuid = uuid;
     }
 
 
 
     @Override
     public int open() {
+        int state = getState();
+        if (state == ErrorCode.ERROR_OK) {
+            return state;
+        }
         try {
-            mBluetoothSocket = mBluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString(BLUETOOTH_UUID));
+            mBluetoothSocket = mBluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString(uuid));
             mBluetoothSocket.connect();
             mConnectState = true;
             mInputStream = mBluetoothSocket.getInputStream();

@@ -28,15 +28,22 @@ import com.sjl.core.permission.SpecialPermission;
 import com.sjl.core.util.log.LogUtils;
 import com.sjl.deviceconnector.ErrorCode;
 import com.sjl.deviceconnector.device.bluetooth.BluetoothHelper;
+import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeNotifyListener;
+import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicWriteRequest;
+import com.sjl.deviceconnector.device.bluetooth.ble.request.BluetoothLeRequest;
+import com.sjl.deviceconnector.device.bluetooth.ble.request.NotifyRequest;
+import com.sjl.deviceconnector.device.bluetooth.ble.response.BluetoothLeResponse;
 import com.sjl.deviceconnector.device.usb.UsbHelper;
 import com.sjl.deviceconnector.listener.ConnectedListener;
 import com.sjl.deviceconnector.listener.UsbPlugListener;
 import com.sjl.deviceconnector.provider.BaseConnectProvider;
 import com.sjl.deviceconnector.provider.BluetoothConnectProvider;
+import com.sjl.deviceconnector.provider.BluetoothLeConnectProvider;
 import com.sjl.deviceconnector.provider.SerialPortConnectProvider;
 import com.sjl.deviceconnector.provider.UsbComConnectProvider;
 import com.sjl.deviceconnector.provider.UsbConnectProvider;
 import com.sjl.deviceconnector.provider.WifiConnectProvider;
+import com.sjl.deviceconnector.test.BuildConfig;
 import com.sjl.deviceconnector.test.app.MyApplication;
 import com.sjl.deviceconnector.test.R;
 import com.sjl.deviceconnector.test.databinding.MainActivityBinding;
@@ -51,12 +58,14 @@ import com.sjl.deviceconnector.util.ByteUtils;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 
 public class MainActivity extends BaseActivity<MainActivityBinding> implements View.OnClickListener {
     private static final int REQUEST_CONNECT_DEVICE = 100;
 
     public static String EXTRA_DEVICE_ITEM = "device_item";
+    public static String EXTRA_SCAN_FLAG = "scan_flag";
 
     private ConnectWay connectWay = ConnectWay.SERIAL_PORT;
     private BaseConnectProvider baseConnectProvider;
@@ -160,7 +169,6 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         PermissionsManager.getInstance().requestPermissionsIfNecessaryForResult(this, permissions, new PermissionsResultAction() {
             @Override
             public void onGranted() {
-                LogUtils.i("授权通过，允许使用应用");
                 initDataWithPermission();
             }
 
@@ -226,6 +234,15 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                 viewBinding.btnOpenWifiSetting.setVisibility(View.VISIBLE);
                 break;
             }
+            case BLUETOOTH_Low_Energy: {
+                viewBinding.btnTestServer.setVisibility(View.GONE);
+                viewBinding.llSerialPortList.setVisibility(View.GONE);
+                viewBinding.llUsbSerialPortList.setVisibility(View.GONE);
+                viewBinding.btnOpenUsbList.setVisibility(View.GONE);
+                viewBinding.btnOpenBluetoothList.setVisibility(View.VISIBLE);
+                viewBinding.btnOpenWifiSetting.setVisibility(View.GONE);
+                break;
+            }
             default:
                 break;
         }
@@ -254,6 +271,11 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
             case R.id.btn_open_bluetooth_list: {
                 Intent serverIntent = new Intent(this, BluetoothListActivity.class);
+                if (connectWay == ConnectWay.BLUETOOTH_Low_Energy){
+                    serverIntent.putExtra(EXTRA_SCAN_FLAG,true);
+                }else {
+                    serverIntent.putExtra(EXTRA_SCAN_FLAG,false);
+                }
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
                 break;
             }
@@ -322,6 +344,10 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
             return;
         }
         hideKeyBoard(this,viewBinding.sendText);
+        if (baseConnectProvider instanceof BluetoothLeConnectProvider){
+            bleSend(sendDataStr,baseConnectProvider);
+            return;
+        }
         MyApplication.getExecutor().execute(new Runnable() {
             @Override
             public void run() {
@@ -337,14 +363,14 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                     }else {
                         sendData = sendDataStr.getBytes();
                     }
-                    
+
                     showMsg("发：" + sendDataStr,false);
                     byte[] buffer = new byte[256];
                     int read = baseConnectProvider.read(sendData, buffer, 5 * 1000);
                     if (read > 0) {
                         byte[] resultData = new byte[read];
                         System.arraycopy(buffer, 0, resultData, 0, read);
-                       
+
                         if (receiveFormat){
                             showMsg("收：" + ByteUtils.byteArrToHexString(resultData),true);
                         }else {
@@ -354,12 +380,86 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                         showMsg("读取数据失败：" + read);
                     }
                 } catch (Exception e) {
+                    LogUtils.e(e);
                     showMsg("操作异常：" + e.getMessage());
                 }
 
             }
         });
 
+    }
+
+    /**
+     * 测试服务id,配上自己的uuid即可
+     */
+    private final UUID UUID_SERVICE= UUID.fromString(BuildConfig.uuid_service);
+    private final UUID UUID_CHARACTER_READ = UUID.fromString(BuildConfig.uuid_character_read);
+    private final UUID UUID_CHARACTER_WRITE = UUID.fromString(BuildConfig.uuid_character_write);
+    private boolean initNotifyFlag = false;
+    private void bleSend(String sendDataStr, BaseConnectProvider baseConnectProvider) {
+
+
+        MyApplication.getExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+
+                synchronized (MainActivity.this){
+                    if (!initNotifyFlag){
+                        initNotifyFlag = true;
+                        initNotify();
+                    }
+                }
+
+
+                byte[] sendData;
+                try {
+                    if (sendFormat){
+                        sendData = ByteUtils.hexStringToByteArr(sendDataStr);
+                        if (sendData.length == 0){
+                            showMsg("16进制格式错误");
+                            return;
+                        }
+                    }else {
+                        sendData = sendDataStr.getBytes();
+                    }
+                    showMsg("发：" + sendDataStr,false);
+                    CharacteristicWriteRequest bluetoothLeRequest = new CharacteristicWriteRequest();
+                    bluetoothLeRequest.setService(UUID_SERVICE);
+                    bluetoothLeRequest.setCharacter(UUID_CHARACTER_WRITE);
+                    bluetoothLeRequest.setBytes(sendData);
+                    BluetoothLeResponse response = new BluetoothLeResponse();
+
+                    sendBleRequest(baseConnectProvider,bluetoothLeRequest,response);
+
+                    showMsg("收：" + response,true);
+
+                } catch (Exception e) {
+                    LogUtils.e(e);
+                    showMsg("操作异常：" + e.getMessage());
+                }
+
+            }
+        });
+    }
+
+    private void initNotify() {
+        NotifyRequest notifyRequest = new NotifyRequest();
+        notifyRequest.setService(UUID_SERVICE);
+        notifyRequest.setCharacter(UUID_CHARACTER_READ);
+        //开
+        notifyRequest.setEnable(true);
+        BluetoothLeResponse response = new BluetoothLeResponse();
+        try {
+            sendBleRequest(baseConnectProvider,notifyRequest,response);
+            LogUtils.i("Ble通知注册：" + response);
+        } catch (Exception e) {
+            LogUtils.e("Ble通知注册差异",e);
+        }
+    }
+
+    private void sendBleRequest(BaseConnectProvider baseConnectProvider,BluetoothLeRequest bluetoothLeRequest, BluetoothLeResponse response) throws Exception {
+        BluetoothLeConnectProvider connectProvider = (BluetoothLeConnectProvider) baseConnectProvider;
+        connectProvider.sendRequest(bluetoothLeRequest,response,5*1000);
     }
 
 
@@ -382,6 +482,17 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                 int ret = baseConnectProvider.open();
                 if (ret == ErrorCode.ERROR_OK) {
                     showMsg("设备连接成功");
+                    if (baseConnectProvider instanceof BluetoothLeConnectProvider){
+                        //监听通知信息
+                        BluetoothLeConnectProvider bluetoothLeConnectProvider=  (BluetoothLeConnectProvider) baseConnectProvider;
+
+                        bluetoothLeConnectProvider.setBluetoothLeNotifyListener(new BluetoothLeNotifyListener() {
+                            @Override
+                            public void onNotify(UUID serviceId, UUID characterId, byte[] value) {
+                                showMsg("收到服务端信息："+ new String(value));
+                            }
+                        });
+                    }
                 } else {
                     showMsg("设备连接失败:"+ret);
                 }
@@ -391,6 +502,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
     }
 
     private void disconnect(View v) {
+        initNotifyFlag = false;
         if (baseConnectProvider != null) {
             baseConnectProvider.close();
             baseConnectProvider = null;
@@ -476,6 +588,12 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                         }
                         case WIFI: {
                             //在连接按钮初始化
+                            break;
+                        }
+                        case BLUETOOTH_Low_Energy: {
+                            bluetoothDevice = extras.getParcelable(EXTRA_DEVICE_ITEM);
+                            baseConnectProvider = new BluetoothLeConnectProvider(bluetoothDevice);
+                            showMsg("当前选择的蓝牙设备：" + bluetoothDevice.getName() + ":" + bluetoothDevice.getAddress());
                             break;
                         }
                         default:

@@ -24,7 +24,7 @@ import androidx.annotation.Nullable;
  */
 public class UsbListAdapter extends BaseQuickAdapter<UsbDevice, BaseViewHolder> {
     public UsbListAdapter(@Nullable List<UsbDevice> data) {
-        super(R.layout.usb_list_recyle_item, data);
+        super(R.layout.usb_list_recycle_item, data);
     }
 
     @Override
