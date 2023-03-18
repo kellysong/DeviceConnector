@@ -33,7 +33,7 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 步骤2. 添加依赖
 
 	dependencies {
-	      implementation 'com.github.kellysong:DeviceConnector:1.0.0'
+	      implementation 'com.github.kellysong:DeviceConnector:1.1.0-RC1'
 
 	}
 
@@ -102,7 +102,7 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
     notifyRequest.setCharacter(UUID_CHARACTER_READ);
     notifyRequest.setEnable(true);
     BluetoothLeResponse response = new BluetoothLeResponse();
-    connectProvider.sendRequest(notifyRequest,response,5*1000);
+    bluetoothLeConnectProvider.sendRequest(notifyRequest,response,5*1000);
 
 **4.关闭连接**
 
