@@ -6,6 +6,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 
+import com.hoho.android.usbserial.driver.CommonUsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
@@ -146,5 +147,25 @@ public class UsbComConnectProvider extends BaseConnectProvider {
         }
         close(usbSerialPort);
 
+    }
+
+    /**
+     * 设置发送缓冲区大小
+     *
+     * @param bufferSize 大小字节数
+     */
+    public void setWriteBufferSize(int bufferSize) {
+        if (usbSerialPort != null && usbSerialPort instanceof CommonUsbSerialPort){
+            CommonUsbSerialPort   commonUsbSerialPort = (CommonUsbSerialPort) usbSerialPort;
+            commonUsbSerialPort.setWriteBufferSize(bufferSize);
+        }
+    }
+
+    public int getMaxWriteBuffer() {
+        return usbSerialPort.getWriteEndpoint().getMaxPacketSize();
+    }
+
+    public int getMaxReadBuffer() {
+        return usbSerialPort.getReadEndpoint().getMaxPacketSize();
     }
 }

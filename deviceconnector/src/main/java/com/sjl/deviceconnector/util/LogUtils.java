@@ -37,5 +37,7 @@ public class LogUtils {
         Log.e(TAG, str, e);
     }
 
-
+    public static boolean isDebug() {
+        return debug;
+    }
 }

@@ -51,6 +51,7 @@ public class UsbConnectProvider extends BaseConnectProvider {
      */
     protected UsbDeviceConnection mDeviceConnection;
     private int maxWriteBuffer;
+    private int maxReadBuffer;
     protected byte[] mWriteBuffer;
     private static final int DEFAULT_WRITE_BUFFER_SIZE = 64 ;
     private static final int MAX_READ_SIZE = 16 * 1024; // = old bulkTransfer limit
@@ -170,6 +171,7 @@ public class UsbConnectProvider extends BaseConnectProvider {
 
                     if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
                         mUsbEndpointIn = ep;
+                        maxReadBuffer = mUsbEndpointIn.getMaxPacketSize();
                         LogUtils.i("找到BulkEndpointIn:" + "index:" + i + ",使用端点号：" + mUsbEndpointIn.getEndpointNumber() + ",mUsbEndpointIn:" + mUsbEndpointIn);
                     }
                     break;
@@ -181,6 +183,7 @@ public class UsbConnectProvider extends BaseConnectProvider {
                     }
                     if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
                         mUsbEndpointIn = ep;
+                        maxReadBuffer = mUsbEndpointIn.getMaxPacketSize();
                         LogUtils.i("找到InterruptEndpointIn:" + "index:" + i + ",使用端点号：" + mUsbEndpointIn.getEndpointNumber() + ",mUsbEndpointIn:" + mUsbEndpointIn);
                     }
                     break;
@@ -194,7 +197,10 @@ public class UsbConnectProvider extends BaseConnectProvider {
     public synchronized int write(byte[] sendParams, int timeout) {
         int offset = 0;
         final long endTime = (timeout == 0) ? 0 : (MonotonicClock.millis() + timeout);
-        mWriteBuffer = new byte[Math.min(DEFAULT_WRITE_BUFFER_SIZE, mWriteBuffer.length)];
+
+        if (mWriteBuffer == null){
+            mWriteBuffer = new byte[Math.min(DEFAULT_WRITE_BUFFER_SIZE, mWriteBuffer.length)];
+        }
         while (offset < sendParams.length) {
             int requestTimeout;
             final int requestLength;
@@ -220,7 +226,9 @@ public class UsbConnectProvider extends BaseConnectProvider {
             } else {
                 actualLength = mDeviceConnection.bulkTransfer(mUsbEndpointOut, writeBuffer, requestLength, requestTimeout);
             }
-            LogUtils.i("Wrote " + actualLength + "/" + requestLength + " offset " + offset + "/" + sendParams.length + " timeout " + requestTimeout);
+            if (LogUtils.isDebug()){
+                LogUtils.i("Wrote " + actualLength + "/" + requestLength + " offset " + offset + "/" + sendParams.length + " timeout " + requestTimeout);
+            }
             if (actualLength <= 0) {
                 if (timeout != 0 && MonotonicClock.millis() >= endTime) {
                     ProviderTimeoutException ex = new ProviderTimeoutException("Error writing " + requestLength + " bytes at offset " + offset + " of total " + sendParams.length + ", rc=" + actualLength);
@@ -271,4 +279,11 @@ public class UsbConnectProvider extends BaseConnectProvider {
         mWriteBuffer = new byte[bufferSize];
     }
 
+    public int getMaxWriteBuffer() {
+        return maxWriteBuffer;
+    }
+
+    public int getMaxReadBuffer() {
+        return maxReadBuffer;
+    }
 }
