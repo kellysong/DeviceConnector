@@ -195,6 +195,10 @@ public class UsbConnectProvider extends BaseConnectProvider {
 
     @Override
     public synchronized int write(byte[] sendParams, int timeout) {
+        int state = getState();
+        if (state != ErrorCode.ERROR_OK) {
+            return state;
+        }
         int offset = 0;
         final long endTime = (timeout == 0) ? 0 : (MonotonicClock.millis() + timeout);
 
@@ -242,15 +246,23 @@ public class UsbConnectProvider extends BaseConnectProvider {
         return ErrorCode.ERROR_OK;
     }
 
+    @Override
+    public synchronized int read(byte[] buffer, int timeout) {
+        int state = getState();
+        if (state != ErrorCode.ERROR_OK) {
+            return state;
+        }
+        final int readMax = Math.min(buffer.length, MAX_READ_SIZE);
+        final int read = mDeviceConnection.bulkTransfer(mUsbEndpointIn, buffer, readMax, timeout);
+        return read;
+    }
+
 
     @Override
     public synchronized int read(byte[] sendParams, byte[] buffer, int timeout) {
         int result = write(sendParams, timeout);
         if (result == ErrorCode.ERROR_OK) {
-            final int read;
-            final int readMax = Math.min(buffer.length, MAX_READ_SIZE);
-            read = mDeviceConnection.bulkTransfer(mUsbEndpointIn, buffer, readMax, timeout);
-            return read;
+            return read(buffer, timeout);
         } else {
             LogUtils.i("发送收数据失败");
             return ErrorCode.ERROR_SEND;//发送收数据失败

@@ -19,6 +19,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 
@@ -74,19 +75,27 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
     private BluetoothDevice bluetoothDevice;
     private String[] permissions = new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.ACCESS_FINE_LOCATION};
     private Intent bluetoothServiceIntent,wifiServiceIntent;
-    /**
-     * 发送格式，true 16进制，false原始文本
-     */
-    boolean sendFormat = false;
-    /**
-     * 接收格式，true 16进制，false原始文本
-     */
-    boolean receiveFormat = false;
+
+
     @Override
     protected void initView() {
-        viewBinding.sendText.setInputType(InputType.TYPE_CLASS_TEXT);
-        String digits = "0123456789abcdefABCDEF";
-        viewBinding.sendText.setKeyListener(DigitsKeyListener.getInstance(digits));
+        viewBinding.rgFormat.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                viewBinding.sendText.setText("");
+                switch (checkedId){
+                    case R.id.rb_text:
+                        viewBinding.sendText.setInputType(InputType.TYPE_CLASS_TEXT);
+                        break;
+                    case R.id.rb_hex:
+                        String digits = "0123456789abcdefABCDEF";
+                        viewBinding.sendText.setKeyListener(DigitsKeyListener.getInstance(digits));
+                        break;
+                }
+            }
+        });
+
+
     }
 
     @Override
@@ -354,7 +363,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
                 byte[] sendData;
                 try {
-                    if (sendFormat){
+                    if (viewBinding.rbHex.isChecked()){
                         sendData = ByteUtils.hexStringToByteArr(sendDataStr);
                         if (sendData.length == 0){
                             showMsg("16进制格式错误");
@@ -371,7 +380,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                         byte[] resultData = new byte[read];
                         System.arraycopy(buffer, 0, resultData, 0, read);
 
-                        if (receiveFormat){
+                        if (viewBinding.rbHex.isChecked()){
                             showMsg("收：" + ByteUtils.byteArrToHexString(resultData),true);
                         }else {
                             showMsg("收：" + new String(resultData),true);
@@ -413,7 +422,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
                 byte[] sendData;
                 try {
-                    if (sendFormat){
+                    if (viewBinding.rbHex.isChecked()){
                         sendData = ByteUtils.hexStringToByteArr(sendDataStr);
                         if (sendData.length == 0){
                             showMsg("16进制格式错误");

@@ -20,6 +20,27 @@ public abstract class BaseIoConnectProvider extends BaseConnectProvider {
     protected InputStream mInputStream;
     protected OutputStream mOutputStream;
 
+    @Override
+    public synchronized int read(byte[] buffer, int timeout) {
+        final Printer logging = mLogging;
+        try {
+            byte[] bytes = readStream(mInputStream, timeout);
+            if (logging != null) {
+                logging.println("<<<<< 收：" + ByteUtils.byteArrToHexString(bytes));
+            }
+            int realLength = bytes.length;
+            System.arraycopy(bytes, 0, buffer, 0, bytes.length);
+            return realLength;
+        } catch (Exception e) {
+            LogUtils.e("读取数据异常", e);
+            if (e instanceof ProviderTimeoutException) {
+                return ErrorCode.ERROR_TIMEOUT;//读取超时
+            } else {
+                return ErrorCode.ERROR_RECEIVE;//接收数据失败
+            }
+        }
+    }
+
 
     @Override
     public synchronized int read(byte[] sendParams, byte[] buffer, int timeout) {
@@ -29,22 +50,7 @@ public abstract class BaseIoConnectProvider extends BaseConnectProvider {
         }
         int ret = write(sendParams, timeout);
         if (ret == ErrorCode.ERROR_OK) {
-            try {
-                byte[] bytes = readStream(mInputStream, timeout);
-                if (logging != null) {
-                    logging.println("<<<<< 收：" + ByteUtils.byteArrToHexString(bytes));
-                }
-                int realLength = bytes.length;
-                System.arraycopy(bytes, 0, buffer, 0, bytes.length);
-                return realLength;
-            } catch (Exception e) {
-                LogUtils.e("读取数据异常", e);
-                if (e instanceof ProviderTimeoutException) {
-                    return ErrorCode.ERROR_TIMEOUT;//读取超时
-                } else {
-                    return ErrorCode.ERROR_RECEIVE;//接收数据失败
-                }
-            }
+           return read(buffer,timeout);
         } else {
             return ErrorCode.ERROR_SEND;//发送数据失败
         }

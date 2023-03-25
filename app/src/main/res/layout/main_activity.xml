@@ -112,7 +112,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="清空" />
-
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -124,6 +123,40 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:text="启动本地测试服务" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="发/收格式："/>
+
+        <RadioGroup
+            android:id="@+id/rg_format"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton android:id="@+id/rb_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="文本"
+                android:checked="true"/>
+
+            <RadioButton android:id="@+id/rb_hex"
+                android:layout_width="wrap_content"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Hex"/>
+
+        </RadioGroup>
 
     </LinearLayout>
 
@@ -141,6 +174,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:inputType="text"
                 android:hint="发送数据"
                 android:singleLine="true" />
 

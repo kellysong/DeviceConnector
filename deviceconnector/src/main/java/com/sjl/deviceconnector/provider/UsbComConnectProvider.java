@@ -118,20 +118,25 @@ public class UsbComConnectProvider extends BaseConnectProvider {
     }
 
     @Override
-    public synchronized int read(byte[] sendParams, byte[] buffer, int timeout) {
+    public synchronized int read(byte[] buffer, int timeout) {
         int state = getState();
         if (state != ErrorCode.ERROR_OK) {
             return state;
         }
+        try {
+            int len = usbSerialPort.read(buffer, timeout);
+            return len;
+        } catch (Exception e) {
+            LogUtils.e("read failed", e);
+            return ErrorCode.ERROR_FAIL;
+        }
+    }
+
+    @Override
+    public synchronized int read(byte[] sendParams, byte[] buffer, int timeout) {
         int ret = write(sendParams, timeout);
         if (ret == ErrorCode.ERROR_OK) {
-            try {
-                int len = usbSerialPort.read(buffer, timeout);
-                return len;
-            } catch (Exception e) {
-                LogUtils.e("read failed", e);
-                return ErrorCode.ERROR_FAIL;
-            }
+            return read(buffer, timeout);
         } else {
             return ret;
         }

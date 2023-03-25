@@ -141,6 +141,12 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
 
     @Deprecated
     @Override
+    public int read(byte[] buffer, int timeout) {
+        return ErrorCode.ERROR_NOT_SUPPORTED;
+    }
+
+    @Deprecated
+    @Override
     public int read(byte[] sendParams, byte[] buffer, int timeout) {
         return ErrorCode.ERROR_NOT_SUPPORTED;
     }

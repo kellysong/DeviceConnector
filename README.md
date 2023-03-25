@@ -33,11 +33,16 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 步骤2. 添加依赖
 
 	dependencies {
-	      implementation 'com.github.kellysong:DeviceConnector:1.1.0-RC1'
+	      implementation 'com.github.kellysong:DeviceConnector:1.1.0-RC2'
 
 	}
 
 # API调用
+
+在Application onCreate()初始化
+
+
+    DeviceContext.init(this,false);
 
 **1.初始化实例**
 
@@ -73,6 +78,11 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 
 **3.写和读数据**
 
+    //只写
+    baseConnectProvider.write(byte[] sendParams, int timeout);
+    //只读
+    baseConnectProvider.read(byte[] buffer, int timeout);
+    //写和读（通用型api）
     baseConnectProvider.read(byte[] sendParams, byte[] buffer, int timeout);
 
 **3.1 蓝牙Ble通讯**
@@ -116,7 +126,7 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 4. 传统串口连接需要Root,免Root连接建议使用Usb Com
 5. Usb Com和Usb连接之前需要先申请Usb权限，再调用open，不然出现首次连接失败;需要注意的是，正常申请一次权限就可以，但是Usb设备被拔出或者应用卸载了，连接之前需要再次申请权限
 6. Usb连接传输模式、传输速度的不同，要注意发送数据包的大小，这里的包指一次传输数据的大小，包大小受限于端点的最大包大小
-7. Usb Com和Usb连接如果的read()方法的逻辑需要改变或者需要一次发送，多次循环读取才能把数据读取完整的话，建议继承**连接提供者**，覆写read()方法进行一次写多次读
+7. Usb Com和Usb连接如果的read()方法的逻辑需要改变或者需要一次发送，多次循环读取才能把数据读取完整的话，建议继承**连接提供者**，覆写read()方法进行一次写多次读；V1.1.0-RC2版本开始支持上层多次读，无须继承覆写read()方法
 8. 蓝牙搜索在Android 6.0以上需要申请定位权限；高版本蓝牙连接会弹出蓝牙配对授权窗口,建议在蓝牙设置里面进行配对和取消配对，配对一次即可；
 9. Wifi连接需要网络权限
 10. App示例中，使用手机就可以模拟测试Wifi连接和蓝牙连接，前提是先启动服务；串口和USB测试需要相应的设备连接
