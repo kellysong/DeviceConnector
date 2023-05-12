@@ -10,7 +10,7 @@ android {
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 29
-        versionCode 2
+        versionCode 4
         versionName "1.1.0"
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -32,9 +32,9 @@ android {
 dependencies {
     implementation 'org.jetbrains:annotations:15.0'
     testImplementation 'junit:junit:4.12'
-    implementation 'com.github.mik3y:usb-serial-for-android:3.4.3'
-    implementation 'com.github.licheedev:Android-SerialPort-API:2.0.0'
-    implementation 'androidx.annotation:annotation:1.2.0'
+    api 'com.github.mik3y:usb-serial-for-android:3.4.3'
+    api 'com.github.licheedev:Android-SerialPort-API:2.0.0'
+    api 'androidx.annotation:annotation:1.2.0'
 
 
 }

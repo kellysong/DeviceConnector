@@ -33,8 +33,14 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 步骤2. 添加依赖
 
 	dependencies {
+          //1.1.0-RC2之前
 	      implementation 'com.github.kellysong:DeviceConnector:1.1.0-RC2'
+          implementation 'com.github.mik3y:usb-serial-for-android:3.4.3'
+          implementation 'com.github.licheedev:Android-SerialPort-API:2.0.0'
+          implementation 'androidx.annotation:annotation:1.2.0'
 
+          //1.1.0之后
+		  implementation 'com.github.kellysong:DeviceConnector:1.1.0'
 	}
 
 # API调用
