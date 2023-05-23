@@ -50,7 +50,7 @@ public class BluetoothLeClient implements IBluetoothLeClient {
                 return false;
             }
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -119,7 +119,9 @@ public class BluetoothLeClient implements IBluetoothLeClient {
     @Override
     public boolean setCharacteristicNotification(UUID serviceId, UUID characterId, boolean enable) {
         BluetoothGattCharacteristic characteristic = mBluetoothGattWrap.getCharacter(serviceId, characterId);
-
+        if (characteristic == null) {
+            return false;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             if (!mBluetoothGatt.setCharacteristicNotification(characteristic, enable)) {
                 LogUtils.e("setCharacteristicNotification失败");
@@ -149,7 +151,9 @@ public class BluetoothLeClient implements IBluetoothLeClient {
     @Override
     public boolean setCharacteristicIndication(UUID serviceId, UUID characterId, boolean enable) {
         BluetoothGattCharacteristic characteristic = mBluetoothGattWrap.getCharacter(serviceId, characterId);
-
+        if (characteristic == null) {
+            return false;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             if (!mBluetoothGatt.setCharacteristicNotification(characteristic, enable)) {
                 LogUtils.e("setCharacteristicNotification失败");

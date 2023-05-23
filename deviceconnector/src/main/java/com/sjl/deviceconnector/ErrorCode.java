@@ -74,7 +74,7 @@ public class ErrorCode {
      */
     public static final int ERROR_PERMISSION_FAIL = -15;
     /**
-     * 打开失败
+     * 打开失败或连接失败
      */
     public static final int ERROR_OPEN_FAIL = -16;
 

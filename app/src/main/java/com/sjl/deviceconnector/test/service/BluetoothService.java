@@ -33,7 +33,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import androidx.annotation.Nullable;
 
 /**
- * TODO
+ * 经典蓝牙
  *
  * @author Kelly
  * @version 1.0.0

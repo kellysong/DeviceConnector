@@ -3,6 +3,7 @@ package com.sjl.deviceconnector.test.activity;
 
 import android.Manifest;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
@@ -30,6 +31,7 @@ import com.sjl.core.util.log.LogUtils;
 import com.sjl.deviceconnector.ErrorCode;
 import com.sjl.deviceconnector.device.bluetooth.BluetoothHelper;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeNotifyListener;
+import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeServiceListener;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicWriteRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.BluetoothLeRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.NotifyRequest;
@@ -59,6 +61,7 @@ import com.sjl.deviceconnector.util.ByteUtils;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -404,21 +407,12 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
     private final UUID UUID_SERVICE= UUID.fromString(BuildConfig.uuid_service);
     private final UUID UUID_CHARACTER_READ = UUID.fromString(BuildConfig.uuid_character_read);
     private final UUID UUID_CHARACTER_WRITE = UUID.fromString(BuildConfig.uuid_character_write);
-    private boolean initNotifyFlag = false;
     private void bleSend(String sendDataStr, BaseConnectProvider baseConnectProvider) {
 
 
         MyApplication.getExecutor().execute(new Runnable() {
             @Override
             public void run() {
-
-                synchronized (MainActivity.this){
-                    if (!initNotifyFlag){
-                        initNotifyFlag = true;
-                        initNotify();
-                    }
-                }
-
 
                 byte[] sendData;
                 try {
@@ -460,7 +454,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         BluetoothLeResponse response = new BluetoothLeResponse();
         try {
             sendBleRequest(baseConnectProvider,notifyRequest,response);
-            LogUtils.i("Ble通知注册：" + response);
+            showMsg("Ble通知注册：" + response);
         } catch (Exception e) {
             LogUtils.e("Ble通知注册差异",e);
         }
@@ -493,14 +487,25 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                     showMsg("设备连接成功");
                     if (baseConnectProvider instanceof BluetoothLeConnectProvider){
                         //监听通知信息
-                        BluetoothLeConnectProvider bluetoothLeConnectProvider=  (BluetoothLeConnectProvider) baseConnectProvider;
-
+                        BluetoothLeConnectProvider bluetoothLeConnectProvider = (BluetoothLeConnectProvider) baseConnectProvider;
+                        //服务发现监听
+                        bluetoothLeConnectProvider.setBluetoothLeServiceListener(new BluetoothLeServiceListener() {
+                            @Override
+                            public void onServicesDiscovered(int status, List<BluetoothGattService> bluetoothGattServices) {
+                                showMsg("status：" + status + ",bluetoothGattServices:" + bluetoothGattServices.size());
+                                if (bluetoothGattServices.size() > 0){
+                                    initNotify();
+                                }
+                            }
+                        });
+                        //服务通知监听
                         bluetoothLeConnectProvider.setBluetoothLeNotifyListener(new BluetoothLeNotifyListener() {
                             @Override
                             public void onNotify(UUID serviceId, UUID characterId, byte[] value) {
-                                showMsg("收到服务端信息："+ new String(value));
+                                showMsg("收到服务端信息：" + new String(value));
                             }
                         });
+
                     }
                 } else {
                     showMsg("设备连接失败:"+ret);
@@ -511,7 +516,6 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
     }
 
     private void disconnect(View v) {
-        initNotifyFlag = false;
         if (baseConnectProvider != null) {
             baseConnectProvider.close();
             baseConnectProvider = null;

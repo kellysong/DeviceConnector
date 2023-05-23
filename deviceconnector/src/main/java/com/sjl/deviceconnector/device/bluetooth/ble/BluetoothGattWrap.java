@@ -38,7 +38,7 @@ public class BluetoothGattWrap {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void addServices(List<BluetoothGattService> services) {
-        mGattServiceList.clear();
+        clear();
         mGattServiceList.addAll(services);
         Map<UUID, Map<UUID, BluetoothGattCharacteristic>> newProfiles = new HashMap<UUID, Map<UUID, BluetoothGattCharacteristic>>();
 
@@ -62,6 +62,10 @@ public class BluetoothGattWrap {
         }
         mDeviceProfile.clear();
         mDeviceProfile.putAll(newProfiles);
+    }
+
+    public void clear() {
+        mGattServiceList.clear();
     }
 
     /**

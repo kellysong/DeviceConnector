@@ -15,6 +15,7 @@ import com.sjl.deviceconnector.Waiter;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothGattWrap;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeClient;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeNotifyListener;
+import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeServiceListener;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicReadRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicWriteRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.DescriptorReadRequest;
@@ -28,7 +29,6 @@ import com.sjl.deviceconnector.device.bluetooth.ble.response.BluetoothLeResponse
 import com.sjl.deviceconnector.exception.ProviderTimeoutException;
 import com.sjl.deviceconnector.util.LogUtils;
 
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
@@ -64,6 +64,13 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
     private boolean resultFailed;
     private int errorCode = -1;
     private BluetoothLeNotifyListener mBluetoothLeNotifyListener;
+    private BluetoothLeServiceListener mBluetoothLeServiceListener;
+    private static final int DEFAULT_RECONNECT_COUNT = 3;
+    /**
+     * 重连次数
+     */
+    private int reconnectCount = 0;
+    private boolean init = false;
 
     /**
      * 初始化一个蓝牙Ble提供者
@@ -110,7 +117,6 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
             if (mGattCallback == null) {
                 return ErrorCode.ERROR_NOT_SUPPORTED;
             }
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 mCountDownLatch = new CountDownLatch(1);
                 mBluetoothGatt = mBluetoothDevice.connectGatt(DeviceContext.getContext(), false,
@@ -120,15 +126,56 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
                 mCountDownLatch = new CountDownLatch(1);
                 mBluetoothGatt = mBluetoothDevice.connectGatt(DeviceContext.getContext(), false, mGattCallback);
                 waitOpenReady();
-            } else {
+            }else {
                 return ErrorCode.ERROR_NOT_SUPPORTED;
             }
-            mBluetoothLeClient.setBluetoothGatt(mBluetoothGatt);
-            return ErrorCode.ERROR_OK;
+            if (mConnectState){
+                mBluetoothLeClient.setBluetoothGatt(mBluetoothGatt);
+                return ErrorCode.ERROR_OK;
+            }else {
+                return ErrorCode.ERROR_OPEN_FAIL;
+            }
         } catch (Exception e) {
             LogUtils.e("蓝牙连接异常", e);
             close();
             return ErrorCode.ERROR_FAIL;
+        }finally {
+            init = true;
+        }
+    }
+
+    /**
+     * 重连, 请先执行一次open,在进行重连
+     *
+     * @return
+     */
+    public int reconnect() {
+        if (init){
+
+            return ErrorCode.ERROR_NOT_INIT;
+        }
+        if (reconnectCount <= 0) {
+            reconnectCount = DEFAULT_RECONNECT_COUNT;
+        }
+        int tempReconnectCount = 0;
+        do {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                mCountDownLatch = new CountDownLatch(1);
+                mBluetoothGatt = mBluetoothDevice.connectGatt(DeviceContext.getContext(), false,
+                        mGattCallback, BluetoothDevice.TRANSPORT_LE);
+                waitOpenReady();
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                mCountDownLatch = new CountDownLatch(1);
+                mBluetoothGatt = mBluetoothDevice.connectGatt(DeviceContext.getContext(), false, mGattCallback);
+                waitOpenReady();
+            }
+            tempReconnectCount++;
+        } while (!mConnectState && tempReconnectCount <= reconnectCount);
+        if (mConnectState){
+            mBluetoothLeClient.setBluetoothGatt(mBluetoothGatt);
+            return ErrorCode.ERROR_OK;
+        }else {
+            return ErrorCode.ERROR_OPEN_FAIL;
         }
     }
 
@@ -195,48 +242,61 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
             resultFailed = false;
             resultReceived = false;
             resultTempBuffer.reset();
+            boolean ret;
+            boolean needWait = true;
             if (request instanceof CharacteristicWriteRequest) {
                 CharacteristicWriteRequest characteristicWriteRequest = (CharacteristicWriteRequest) request;
-                mBluetoothLeClient.writeCharacteristic(characteristicWriteRequest.getService(), characteristicWriteRequest.getCharacter(), characteristicWriteRequest.getBytes());
+                ret = mBluetoothLeClient.writeCharacteristic(characteristicWriteRequest.getService(), characteristicWriteRequest.getCharacter(), characteristicWriteRequest.getBytes());
 
             } else if (request instanceof CharacteristicReadRequest) {
                 CharacteristicReadRequest characteristicReadRequest = (CharacteristicReadRequest) request;
-                mBluetoothLeClient.readCharacteristic(characteristicReadRequest.getService(), characteristicReadRequest.getCharacter());
+                ret = mBluetoothLeClient.readCharacteristic(characteristicReadRequest.getService(), characteristicReadRequest.getCharacter());
 
             } else if (request instanceof DescriptorWriteRequest) {
                 DescriptorWriteRequest descriptorWriteRequest = (DescriptorWriteRequest) request;
-                mBluetoothLeClient.writeDescriptor(descriptorWriteRequest.getService(), descriptorWriteRequest.getCharacter()
+                ret = mBluetoothLeClient.writeDescriptor(descriptorWriteRequest.getService(), descriptorWriteRequest.getCharacter()
                         , descriptorWriteRequest.getDescriptor(), descriptorWriteRequest.getBytes());
 
             } else if (request instanceof DescriptorReadRequest) {
                 DescriptorReadRequest descriptorReadRequest = (DescriptorReadRequest) request;
 
-                mBluetoothLeClient.readDescriptor(descriptorReadRequest.getService(), descriptorReadRequest.getCharacter(), descriptorReadRequest.getDescriptor());
+                ret = mBluetoothLeClient.readDescriptor(descriptorReadRequest.getService(), descriptorReadRequest.getCharacter(), descriptorReadRequest.getDescriptor());
 
             } else if (request instanceof NotifyRequest) {
+                needWait = false;
                 NotifyRequest notifyRequest = (NotifyRequest) request;
-                mBluetoothLeClient.setCharacteristicNotification(notifyRequest.getService(), notifyRequest.getCharacter(), notifyRequest.isEnable());
+                ret = mBluetoothLeClient.setCharacteristicNotification(notifyRequest.getService(), notifyRequest.getCharacter(), notifyRequest.isEnable());
 
             } else if (request instanceof IndicateRequest) {
+                needWait = false;
                 IndicateRequest indicateRequest = (IndicateRequest) request;
-
-                mBluetoothLeClient.setCharacteristicIndication(indicateRequest.getService(), indicateRequest.getCharacter(), indicateRequest.isEnable());
+                ret = mBluetoothLeClient.setCharacteristicIndication(indicateRequest.getService(), indicateRequest.getCharacter(), indicateRequest.isEnable());
 
             } else if (request instanceof RemoteRssiRequest) {
-                mBluetoothLeClient.readRemoteRssi();
+                ret = mBluetoothLeClient.readRemoteRssi();
 
             } else if (request instanceof MtuRequest) {
                 MtuRequest mtuRequest = (MtuRequest) request;
-                mBluetoothLeClient.requestMtu(mtuRequest.getMtu());
+                ret = mBluetoothLeClient.requestMtu(mtuRequest.getMtu());
 
             } else {
                 throw new RuntimeException("未知请求");
             }
-            waitRequest(timeout);
-            if (resultFailed) {
-                throw new ExecutionException(new Exception("错误码：" + errorCode));
-            } else if (!resultReceived) {
-                throw new ProviderTimeoutException("通讯超时");
+            if (!ret && response != null){
+                //请求失败
+                resultTempBuffer.setCode(ErrorCode.ERROR_SEND);
+                response.copy(resultTempBuffer);
+                return;
+            }
+            if (!needWait){
+                resultTempBuffer.setCode(ErrorCode.ERROR_OK);
+            }else {
+                waitRequest(timeout);
+                if (resultFailed) {
+                    throw new ExecutionException(new Exception("错误码：" + errorCode));
+                } else if (!resultReceived) {
+                    throw new ProviderTimeoutException("通讯超时");
+                }
             }
             if (response != null) {
                 response.copy(resultTempBuffer);
@@ -249,6 +309,7 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
     @Override
     public void close() {
         mBluetoothLeNotifyListener = null;
+        mBluetoothLeServiceListener = null;
         resultFailed = false;
         resultReceived = false;
         resultTempBuffer = null;
@@ -313,15 +374,32 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
              *	8 ： 设备超出范围
              *	22 ：表示本地设备终止了连接
              */
-            if (status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
-                mConnectState = true;
-                //发现服务
-                discoveredServices();
+            LogUtils.e("连接状态改变，status:" + status + ",newState:" + newState);
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (newState == BluetoothProfile.STATE_CONNECTED){
+                    mConnectState = true;
+                    //发现服务
+                    discoveredServices();
+                }else if(newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    mConnectState = false;
+                    //清除连接
+                    if (mBluetoothGatt != null) {
+                        mBluetoothGatt.close();
+                    }
+                }else {
+                    //重新连接
+                    if (mBluetoothGatt != null) {
+                        mBluetoothGatt.connect();
+                    }
+                }
+                notifyOpenReady();
             } else {
-                LogUtils.e("连接状态改变，status:" + status + ",newState:" + newState);
                 close();
+                notifyOpenReady();
+                //连接前先断开连接,开始重连，建议外部调用open之后调用
+//                reconnect();
             }
-            notifyOpenReady();
+
         }
 
 
@@ -334,7 +412,11 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
             if (BluetoothGatt.GATT_SUCCESS == status) {
                 mBluetoothGattWrap.addServices(gatt.getServices());
             } else {
+                mBluetoothGattWrap.clear();
                 LogUtils.e("服务发现失败 status:" + status);
+            }
+            if (mBluetoothLeServiceListener != null){
+                mBluetoothLeServiceListener.onServicesDiscovered(status,mBluetoothGattWrap.getServices());
             }
         }
 
@@ -371,6 +453,7 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
                 if (BluetoothGatt.GATT_SUCCESS == status) {
 
                     resultReceived = true;
+                    resultTempBuffer.setData(characteristic.getValue());
                 } else {
                     resultTempBuffer.setCode(status);
                     LogUtils.e("特征写入失败 status:" + status);
@@ -429,6 +512,7 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
             synchronized (object) {
                 if (BluetoothGatt.GATT_SUCCESS == status) {
                     resultReceived = true;
+                    resultTempBuffer.setData(descriptor.getValue());
                 } else {
                     resultTempBuffer.setCode(status);
                     LogUtils.e("描述写入失败 status:" + status);
@@ -477,6 +561,7 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
             }
 
         }
+
     }
 
     /**
@@ -486,5 +571,21 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
      */
     public void setBluetoothLeNotifyListener(BluetoothLeNotifyListener bluetoothLeNotifyListener) {
         this.mBluetoothLeNotifyListener = bluetoothLeNotifyListener;
+    }
+
+    /**
+     * 服务发现监听
+     * @param bluetoothLeServiceListener
+     */
+    public void setBluetoothLeServiceListener(BluetoothLeServiceListener bluetoothLeServiceListener) {
+        this.mBluetoothLeServiceListener = bluetoothLeServiceListener;
+    }
+
+    /**
+     * 设置重连次数
+     * @param reconnectCount
+     */
+    public void setReconnectCount(int reconnectCount) {
+        this.reconnectCount = reconnectCount;
     }
 }
