@@ -150,7 +150,7 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
      * @return
      */
     public int reconnect() {
-        if (init){
+        if (!init){
 
             return ErrorCode.ERROR_NOT_INIT;
         }
