@@ -124,6 +124,14 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 
     baseConnectProvider.close();
 
+# 混淆
+
+    -keep class android.serialport.**{*;}
+    -keep class * implements com.hoho.android.usbserial.driver.UsbSerialDriver {
+  
+            public static java.util.Map getSupportedDevices();
+    }
+
 # 注意事项
 
 1. 检查设备支持的连接方式
