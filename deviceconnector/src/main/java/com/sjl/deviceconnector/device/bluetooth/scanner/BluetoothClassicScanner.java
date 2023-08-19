@@ -95,11 +95,11 @@ public class BluetoothClassicScanner extends AbstractBluetoothScanner implements
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
 
                 LogUtils.i("BluetoothDevice:" + device.getName() + ",address:" + device.getAddress());
+                notifyDeviceFounded(new BluetoothScanResult(device, rssi, (byte[]) null));
+
                 if (!TextUtils.isEmpty(address) && address.equals(device.getAddress())) {
                     stopScan();
                 }
-                notifyDeviceFounded(new BluetoothScanResult(device, rssi, (byte[]) null));
-
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 LogUtils.w("蓝牙扫描完毕");
                 notifyScanFinish();

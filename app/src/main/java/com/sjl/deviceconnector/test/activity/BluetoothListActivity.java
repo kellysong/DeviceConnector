@@ -120,9 +120,9 @@ public class BluetoothListActivity extends BaseActivity<BluetoothListActivityBin
         mBluetoothListAdapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
+                BluetoothHelper.getInstance().stopScan();
                 BluetoothScanResult item = (BluetoothScanResult) adapter.getItem(position);
 
-                BluetoothHelper.getInstance().stopScan();
                 Intent intent = new Intent();
                 intent.putExtra(MainActivity.EXTRA_DEVICE_ITEM, item.getDevice());
                 setResult(Activity.RESULT_OK, intent);

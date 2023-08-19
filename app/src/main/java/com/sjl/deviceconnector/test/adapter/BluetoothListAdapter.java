@@ -7,6 +7,8 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.sjl.deviceconnector.entity.BluetoothScanResult;
 import com.sjl.deviceconnector.test.R;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -61,6 +63,15 @@ public class BluetoothListAdapter extends BaseQuickAdapter<BluetoothScanResult, 
         if (!exist){
             addData(device);
         }
+        //按信号强弱从大到小排序
+        Collections.sort(getData(), new Comparator<BluetoothScanResult>() {
+            @Override
+            public int compare(BluetoothScanResult o1, BluetoothScanResult o2) {
+                return o2.getRssi()- o1.getRssi();
+            }
+        });
+        notifyDataSetChanged();
+
     }
 
     public void setScanFlag(boolean scanFlag) {

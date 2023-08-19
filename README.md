@@ -1,6 +1,6 @@
 # DeviceConnector
 
-Android 设备连接者，提供Android上位机和外设的连接通讯通道，支持多种连接方式选择，如串口、Usb Com、Usb、蓝牙、Wifi的连接，
+Android 设备连接者，提供Android上位机和外设的连接通讯通道，支持多种连接方式选择，如串口、Usb Com、Usb、经典蓝牙、低功耗蓝牙、Wifi的连接，
 DeviceConnector框架上层调用一致，底层不同实现，方便使用者切换连接方式。为简化上层调用和方便数据处理， 全部连接采用同步操作，即一发一收（一问一答）的方式通讯
 
 **应用场景：**
@@ -40,7 +40,7 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
           implementation 'androidx.annotation:annotation:1.2.0'
 
           //1.1.0之后
-		  implementation 'com.github.kellysong:DeviceConnector:1.1.1'
+		  implementation 'com.github.kellysong:DeviceConnector:1.1.2'
 	}
 
 # API调用
@@ -119,6 +119,12 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
     notifyRequest.setEnable(true);
     BluetoothLeResponse response = new BluetoothLeResponse();
     bluetoothLeConnectProvider.sendRequest(notifyRequest,response,5*1000);
+    //3. 修改mtu(子线程执行)
+    MtuRequest mtuRequest = new MtuRequest();
+    mtuRequest.setMtu(240);
+    //ble包的最大值，实际以返回的mtu作为参考值
+    BluetoothLeResponse response = new BluetoothLeResponse();
+    bluetoothLeConnectProvider.mtuRequest(notifyRequest,response,5*1000);
 
 **4.关闭连接**
 
@@ -145,6 +151,9 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
 9. Wifi连接需要网络权限
 10. App示例中，使用手机就可以模拟测试Wifi连接和蓝牙连接，前提是先启动服务；串口和USB测试需要相应的设备连接
 11. 已集成网络、蓝牙（包括ble）、Usb定位权限（权限申请由调用者申请）
+12. 提高ble蓝牙连接成功率的建议：1.扫描到后连接 2.蓝牙断开再次连接，等待蓝牙断开连接回调后再次尝试 2.在连接失败或者断开连接之后，关闭之前进行缓存刷新（框架已经处理）
+13. 针对有输入输出流的连接者（串口、Wifi、经典蓝牙），需要在外部处理，建议拿到输入流之后在外部启动线程监听，这时候不能使用read方法，需要调用者自己实现
+
 
 # License
 

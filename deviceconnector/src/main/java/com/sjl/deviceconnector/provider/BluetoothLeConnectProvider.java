@@ -16,11 +16,11 @@ import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothGattWrap;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeClient;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeNotifyListener;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeServiceListener;
+import com.sjl.deviceconnector.device.bluetooth.ble.request.BluetoothLeRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicReadRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicWriteRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.DescriptorReadRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.DescriptorWriteRequest;
-import com.sjl.deviceconnector.device.bluetooth.ble.request.BluetoothLeRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.IndicateRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.MtuRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.NotifyRequest;
@@ -29,6 +29,7 @@ import com.sjl.deviceconnector.device.bluetooth.ble.response.BluetoothLeResponse
 import com.sjl.deviceconnector.exception.ProviderTimeoutException;
 import com.sjl.deviceconnector.util.LogUtils;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
@@ -312,14 +313,37 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
         mBluetoothLeServiceListener = null;
         resultFailed = false;
         resultReceived = false;
-        resultTempBuffer = null;
+        resultTempBuffer.reset();
         mGattCallback = null;
         mConnectState = false;
+        clearConnect();
+    }
+
+    /**
+     * 清除连接
+     * <p>在断开连接之后再次连接经常会出现133错误</p>
+     */
+    public synchronized void clearConnect() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && mBluetoothGatt != null) {
             mBluetoothGatt.disconnect();
+            refreshDeviceCache();
             mBluetoothGatt.close();
         }
+    }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public synchronized void refreshDeviceCache() {
+        try {
+            final Method refresh = BluetoothGatt.class.getMethod("refresh");
+            if (refresh != null && mBluetoothGatt != null) {
+                refresh.setAccessible(true);
+                boolean ret = (Boolean) refresh.invoke(mBluetoothGatt);
+                LogUtils.i("refreshDeviceCache, ret:  " + ret);
+            }
+        } catch (Exception e) {
+            LogUtils.i("refreshDeviceCache exception: " + e.getMessage());
+        }
     }
 
 
@@ -383,14 +407,13 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
                 }else if(newState == BluetoothProfile.STATE_DISCONNECTED) {
                     mConnectState = false;
                     //清除连接
-                    if (mBluetoothGatt != null) {
-                        mBluetoothGatt.close();
-                    }
+                    clearConnect();
                 }else {
-                    //重新连接
+                    LogUtils.e("重新连接");
+                   /* //重新连接
                     if (mBluetoothGatt != null) {
                         mBluetoothGatt.connect();
-                    }
+                    }*/
                 }
                 notifyOpenReady();
             } else {
@@ -564,6 +587,8 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
 
     }
 
+
+
     /**
      * 监听服务端发来的消息
      *
@@ -587,5 +612,10 @@ public class BluetoothLeConnectProvider extends BaseConnectProvider {
      */
     public void setReconnectCount(int reconnectCount) {
         this.reconnectCount = reconnectCount;
+    }
+
+
+    public BluetoothGatt getBluetoothGatt() {
+        return mBluetoothGatt;
     }
 }

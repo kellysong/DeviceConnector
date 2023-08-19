@@ -9,6 +9,7 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.os.Build;
+import android.text.TextUtils;
 
 import com.sjl.deviceconnector.entity.BluetoothScanResult;
 import com.sjl.deviceconnector.util.BluetoothUtils;
@@ -85,7 +86,12 @@ public class BluetoothLowEnergyScanner extends AbstractBluetoothScanner {
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothScanResult bluetoothScanResult = new BluetoothScanResult(result.getDevice(), result.getRssi(), result.getScanRecord());
             bluetoothScanResult.setScanRecordBytes(result.getScanRecord().getBytes());
+
             notifyDeviceFounded(bluetoothScanResult);
+
+            if (!TextUtils.isEmpty(address) && address.equals(bluetoothScanResult.getAddress())) {
+                stopScan();
+            }
         }
 
         @Override
@@ -108,7 +114,13 @@ public class BluetoothLowEnergyScanner extends AbstractBluetoothScanner {
 
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            notifyDeviceFounded(new BluetoothScanResult(device, rssi, scanRecord));
+            BluetoothScanResult bluetoothScanResult = new BluetoothScanResult(device, rssi, scanRecord);
+
+            notifyDeviceFounded(bluetoothScanResult);
+
+            if (!TextUtils.isEmpty(address) && address.equals(bluetoothScanResult.getAddress())) {
+                stopScan();
+            }
         }
 
     };

@@ -23,7 +23,6 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-
 import com.sjl.core.permission.PermissionsManager;
 import com.sjl.core.permission.PermissionsResultAction;
 import com.sjl.core.permission.SpecialPermission;
@@ -32,8 +31,9 @@ import com.sjl.deviceconnector.ErrorCode;
 import com.sjl.deviceconnector.device.bluetooth.BluetoothHelper;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeNotifyListener;
 import com.sjl.deviceconnector.device.bluetooth.ble.BluetoothLeServiceListener;
-import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicWriteRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.BluetoothLeRequest;
+import com.sjl.deviceconnector.device.bluetooth.ble.request.CharacteristicWriteRequest;
+import com.sjl.deviceconnector.device.bluetooth.ble.request.MtuRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.request.NotifyRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.response.BluetoothLeResponse;
 import com.sjl.deviceconnector.device.usb.UsbHelper;
@@ -47,8 +47,8 @@ import com.sjl.deviceconnector.provider.UsbComConnectProvider;
 import com.sjl.deviceconnector.provider.UsbConnectProvider;
 import com.sjl.deviceconnector.provider.WifiConnectProvider;
 import com.sjl.deviceconnector.test.BuildConfig;
-import com.sjl.deviceconnector.test.app.MyApplication;
 import com.sjl.deviceconnector.test.R;
+import com.sjl.deviceconnector.test.app.MyApplication;
 import com.sjl.deviceconnector.test.databinding.MainActivityBinding;
 import com.sjl.deviceconnector.test.entity.ConnectWay;
 import com.sjl.deviceconnector.test.entity.MessageEvent;
@@ -413,7 +413,8 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         MyApplication.getExecutor().execute(new Runnable() {
             @Override
             public void run() {
-
+                //修改mtu
+                modifyMtu();
                 byte[] sendData;
                 try {
                     if (viewBinding.rbHex.isChecked()){
@@ -454,15 +455,27 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         BluetoothLeResponse response = new BluetoothLeResponse();
         try {
             sendBleRequest(baseConnectProvider,notifyRequest,response);
-            showMsg("Ble通知注册：" + response);
+            showMsg("Ble通知注册结果：" + response);
         } catch (Exception e) {
-            LogUtils.e("Ble通知注册差异",e);
+            LogUtils.e("Ble通知注册异常",e);
+        }
+    }
+
+    private void modifyMtu() {
+        MtuRequest mtuRequest = new MtuRequest();
+        mtuRequest.setMtu(512);
+        BluetoothLeResponse response = new BluetoothLeResponse();
+        try {
+            sendBleRequest(baseConnectProvider,mtuRequest,response);
+            showMsg("Ble mtu修改结果：" + response);
+        } catch (Exception e) {
+            LogUtils.e("Ble mtu修改异常",e);
         }
     }
 
     private void sendBleRequest(BaseConnectProvider baseConnectProvider,BluetoothLeRequest bluetoothLeRequest, BluetoothLeResponse response) throws Exception {
         BluetoothLeConnectProvider connectProvider = (BluetoothLeConnectProvider) baseConnectProvider;
-        connectProvider.sendRequest(bluetoothLeRequest,response,5*1000);
+        connectProvider.sendRequest(bluetoothLeRequest,response,10*1000);
     }
 
 
@@ -495,6 +508,8 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                                 showMsg("status：" + status + ",bluetoothGattServices:" + bluetoothGattServices.size());
                                 if (bluetoothGattServices.size() > 0){
                                     initNotify();
+
+
                                 }
                             }
                         });
@@ -509,16 +524,20 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                     }
                 } else {
                     showMsg("设备连接失败:"+ret);
+                    if (baseConnectProvider instanceof BluetoothLeConnectProvider){
+                        baseConnectProvider.close();
+                    }
                 }
             }
         });
 
     }
 
+
+
     private void disconnect(View v) {
         if (baseConnectProvider != null) {
             baseConnectProvider.close();
-            baseConnectProvider = null;
             if (v != null){ //收到点击点开才显示日志
                 showMsg("设备断开连接成功");
             }

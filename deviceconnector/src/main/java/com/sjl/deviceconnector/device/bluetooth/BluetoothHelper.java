@@ -74,6 +74,7 @@ public class BluetoothHelper implements ReceiverObservable {
     public void setScanTime(int scanTime) {
         if (scanTime < 2 * 1000) {
             this.mScanTime = DEFAULT_SCAN_TIME;
+            return;
         }
         this.mScanTime = scanTime;
     }
