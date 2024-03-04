@@ -21,4 +21,11 @@ public class MessageEventUtils {
         stringBuilder.setEvent(log);
         EventBus.getDefault().post(stringBuilder.create());
     }
+
+    public static void sendData(int connectWay,String data) {
+        MessageEvent.Builder<String> stringBuilder = new MessageEvent.Builder<String>();
+        stringBuilder.setCode(connectWay);
+        stringBuilder.setEvent(data);
+        EventBus.getDefault().post(stringBuilder.create());
+    }
 }

@@ -40,6 +40,7 @@ import com.sjl.deviceconnector.device.usb.UsbHelper;
 import com.sjl.deviceconnector.listener.ConnectedListener;
 import com.sjl.deviceconnector.listener.UsbPlugListener;
 import com.sjl.deviceconnector.provider.BaseConnectProvider;
+import com.sjl.deviceconnector.provider.BaseIoConnectProvider;
 import com.sjl.deviceconnector.provider.BluetoothConnectProvider;
 import com.sjl.deviceconnector.provider.BluetoothLeConnectProvider;
 import com.sjl.deviceconnector.provider.SerialPortConnectProvider;
@@ -54,10 +55,15 @@ import com.sjl.deviceconnector.test.entity.ConnectWay;
 import com.sjl.deviceconnector.test.entity.MessageEvent;
 import com.sjl.deviceconnector.test.entity.SerialPortInfo;
 import com.sjl.deviceconnector.test.entity.WifiInfo;
+import com.sjl.deviceconnector.test.service.BleService;
 import com.sjl.deviceconnector.test.service.BluetoothService;
+import com.sjl.deviceconnector.test.service.ReadThread;
 import com.sjl.deviceconnector.test.service.WifiService;
+import com.sjl.deviceconnector.test.util.MessageEventUtils;
 import com.sjl.deviceconnector.util.ByteUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -77,8 +83,8 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
     private UsbDevice usbDevice;
     private BluetoothDevice bluetoothDevice;
     private String[] permissions = new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.ACCESS_FINE_LOCATION};
-    private Intent bluetoothServiceIntent,wifiServiceIntent;
-
+    private Intent bluetoothServiceIntent,wifiServiceIntent,bleServiceIntent;
+    private boolean isServer = false;
 
     @Override
     protected void initView() {
@@ -115,7 +121,9 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         viewBinding.btnDisconnect.setOnClickListener(this);
         viewBinding.btnSend.setOnClickListener(this);
         viewBinding.btnClear.setOnClickListener(this);
-        viewBinding.btnTestServer.setOnClickListener(this);
+        viewBinding.btnStartTestServer.setOnClickListener(this);
+        viewBinding.btnStopTestServer.setOnClickListener(this);
+
         UsbHelper.getInstance().setUsbPlugListener(new UsbPlugListener() {
             @Override
             public void onAttached(UsbDevice usbDevice) {
@@ -201,7 +209,8 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         disconnect(null);
         switch (connectWay) {
             case SERIAL_PORT: {
-                viewBinding.btnTestServer.setVisibility(View.GONE);
+                isServer = false;
+                viewBinding.llServer.setVisibility(View.GONE);
                 viewBinding.llSerialPortList.setVisibility(View.VISIBLE);
                 viewBinding.llUsbSerialPortList.setVisibility(View.GONE);
                 viewBinding.btnOpenUsbList.setVisibility(View.GONE);
@@ -210,7 +219,8 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                 break;
             }
             case USB_COM: {
-                viewBinding.btnTestServer.setVisibility(View.GONE);
+                isServer = false;
+                viewBinding.llServer.setVisibility(View.GONE);
                 viewBinding.llSerialPortList.setVisibility(View.GONE);
                 viewBinding.llUsbSerialPortList.setVisibility(View.VISIBLE);
                 viewBinding.btnOpenUsbList.setVisibility(View.GONE);
@@ -219,7 +229,8 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                 break;
             }
             case USB: {
-                viewBinding.btnTestServer.setVisibility(View.GONE);
+                isServer = false;
+                viewBinding.llServer.setVisibility(View.GONE);
 
                 viewBinding.llSerialPortList.setVisibility(View.GONE);
                 viewBinding.llUsbSerialPortList.setVisibility(View.GONE);
@@ -228,8 +239,9 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                 viewBinding.btnOpenWifiSetting.setVisibility(View.GONE);
                 break;
             }
+            case BLUETOOTH_LOW_ENERGY:
             case BLUETOOTH: {
-                viewBinding.btnTestServer.setVisibility(View.VISIBLE);
+                viewBinding.llServer.setVisibility(View.VISIBLE);
                 viewBinding.llSerialPortList.setVisibility(View.GONE);
                 viewBinding.llUsbSerialPortList.setVisibility(View.GONE);
                 viewBinding.btnOpenUsbList.setVisibility(View.GONE);
@@ -238,21 +250,12 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                 break;
             }
             case WIFI: {
-                viewBinding.btnTestServer.setVisibility(View.VISIBLE);
+                viewBinding.llServer.setVisibility(View.VISIBLE);
                 viewBinding.llSerialPortList.setVisibility(View.GONE);
                 viewBinding.llUsbSerialPortList.setVisibility(View.GONE);
                 viewBinding.btnOpenUsbList.setVisibility(View.GONE);
                 viewBinding.btnOpenBluetoothList.setVisibility(View.GONE);
                 viewBinding.btnOpenWifiSetting.setVisibility(View.VISIBLE);
-                break;
-            }
-            case BLUETOOTH_Low_Energy: {
-                viewBinding.btnTestServer.setVisibility(View.GONE);
-                viewBinding.llSerialPortList.setVisibility(View.GONE);
-                viewBinding.llUsbSerialPortList.setVisibility(View.GONE);
-                viewBinding.btnOpenUsbList.setVisibility(View.GONE);
-                viewBinding.btnOpenBluetoothList.setVisibility(View.VISIBLE);
-                viewBinding.btnOpenWifiSetting.setVisibility(View.GONE);
                 break;
             }
             default:
@@ -283,7 +286,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
             case R.id.btn_open_bluetooth_list: {
                 Intent serverIntent = new Intent(this, BluetoothListActivity.class);
-                if (connectWay == ConnectWay.BLUETOOTH_Low_Energy){
+                if (connectWay == ConnectWay.BLUETOOTH_LOW_ENERGY){
                     serverIntent.putExtra(EXTRA_SCAN_FLAG,true);
                 }else {
                     serverIntent.putExtra(EXTRA_SCAN_FLAG,false);
@@ -310,23 +313,46 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                 break;
             }
             case R.id.btn_send: {
-                send();
+
+                if (!isServer){
+                    send();
+                }else {
+                    sendClient();
+                }
                 break;
             }
-            case R.id.btn_test_server: {
+            case R.id.btn_start_test_server: {
                 //需要申请一个前台通知，防止高版本服务挂掉
                 PermissionsManager.getInstance().requestSpecialPermission(SpecialPermission.NOTIFICATION_ACCESS,this, new PermissionsResultAction() {
                     @Override
                     public void onGranted() {
                         if (connectWay == ConnectWay.BLUETOOTH){ //启动模拟测试服务
+                            stopBleService();
                             bluetoothServiceIntent = new Intent(MainActivity.this, BluetoothService.class);
                             startService(bluetoothServiceIntent);
+                            isServer = true;
+                            viewBinding.llClient.setVisibility(View.GONE);
+                            viewBinding.btnStartTestServer.setEnabled(false);
+                            viewBinding.btnStopTestServer.setEnabled(true);
                         }else if(connectWay == ConnectWay.WIFI){ //启动模拟测试服务
                             wifiServiceIntent = new Intent(MainActivity.this, WifiService.class);
                             startService(wifiServiceIntent);
+                            isServer = true;
+                            viewBinding.llClient.setVisibility(View.GONE);
+                            viewBinding.btnStartTestServer.setEnabled(false);
+                            viewBinding.btnStopTestServer.setEnabled(true);
+                        }else if(connectWay == ConnectWay.BLUETOOTH_LOW_ENERGY){ //启动模拟测试服务
+                            stopBluetoothService();
+                            bleServiceIntent = new Intent(MainActivity.this, BleService.class);
+                            startService(bleServiceIntent);
+                            isServer = true;
+                            viewBinding.llClient.setVisibility(View.GONE);
+                            viewBinding.btnStartTestServer.setEnabled(false);
+                            viewBinding.btnStopTestServer.setEnabled(true);
                         }else {
-                            showMsg("该连接方式不支持，请连接实际设备测试");
+                            showMsg("该连接方式不支持，请检查");
                         }
+
                     }
 
                     @Override
@@ -334,7 +360,31 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                         LogUtils.i("拒绝权限：" + permission);
                     }
                 });
-
+                
+                break;
+            }
+            case R.id.btn_stop_test_server: {
+                if (connectWay == ConnectWay.BLUETOOTH){ //启动模拟测试服务
+                    stopBluetoothService();
+                    isServer = false;
+                    viewBinding.llClient.setVisibility(View.VISIBLE);
+                    viewBinding.btnStartTestServer.setEnabled(true);
+                    viewBinding.btnStopTestServer.setEnabled(false);
+                }else if(connectWay == ConnectWay.WIFI){ //启动模拟测试服务
+                    stopWifiService();
+                    isServer = false;
+                    viewBinding.llClient.setVisibility(View.VISIBLE);
+                    viewBinding.btnStartTestServer.setEnabled(true);
+                    viewBinding.btnStopTestServer.setEnabled(false);
+                }else if(connectWay == ConnectWay.BLUETOOTH_LOW_ENERGY){ //启动模拟测试服务
+                    stopBleService();
+                    isServer = false;
+                    viewBinding.llClient.setVisibility(View.VISIBLE);
+                    viewBinding.btnStartTestServer.setEnabled(true);
+                    viewBinding.btnStopTestServer.setEnabled(false);
+                }else {
+                    showMsg("该连接方式不支持，请检查");
+                }
 
                 break;
             }
@@ -343,8 +393,50 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         }
     }
 
+    /**
+     * 服务端发给客户端
+     */
+    private void sendClient() {
+
+        String sendDataStr = viewBinding.sendText.getText().toString().trim();
+        if (TextUtils.isEmpty(sendDataStr)) {
+            showMsg("发送数据不能为空");
+            return;
+        }
+        hideKeyBoard(this,viewBinding.sendText);
+        MyApplication.getExecutor().execute(new Runnable() {
+            @Override
+            public void run() {
+
+                byte[] sendData;
+                try {
+                    if (viewBinding.rbHex.isChecked()){
+                        sendData = ByteUtils.hexStringToByteArr(sendDataStr);
+                        if (sendData.length == 0){
+                            showMsg("16进制格式错误");
+                            return;
+                        }
+                    }else {
+                        sendData = sendDataStr.getBytes();
+                    }
+
+                    showMsg("发：" + sendDataStr,false);
+                    MessageEventUtils.sendData(connectWay.ordinal(),new String(sendData));
+
+                } catch (Exception e) {
+                    LogUtils.e(e);
+                    showMsg("操作异常：" + e.getMessage());
+                }
+
+            }
+        });
+    }
 
 
+
+    /**
+     * 客户端发给服务端
+     */
     private void send() {
         if (baseConnectProvider == null) {
             showMsg("请先连接设备");
@@ -398,7 +490,6 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
             }
         });
-
     }
 
     /**
@@ -407,14 +498,20 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
     private final UUID UUID_SERVICE= UUID.fromString(BuildConfig.uuid_service);
     private final UUID UUID_CHARACTER_READ = UUID.fromString(BuildConfig.uuid_character_read);
     private final UUID UUID_CHARACTER_WRITE = UUID.fromString(BuildConfig.uuid_character_write);
+    private boolean modifyMtuFlag = false;
     private void bleSend(String sendDataStr, BaseConnectProvider baseConnectProvider) {
 
 
         MyApplication.getExecutor().execute(new Runnable() {
             @Override
             public void run() {
-                //修改mtu
-                modifyMtu();
+                if (!modifyMtuFlag){
+                    //修改mtu
+                    modifyMtu();
+                    modifyMtuFlag = true;
+                }
+
+
                 byte[] sendData;
                 try {
                     if (viewBinding.rbHex.isChecked()){
@@ -463,7 +560,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
     private void modifyMtu() {
         MtuRequest mtuRequest = new MtuRequest();
-        mtuRequest.setMtu(512);
+        mtuRequest.setMtu(240);
         BluetoothLeResponse response = new BluetoothLeResponse();
         try {
             sendBleRequest(baseConnectProvider,mtuRequest,response);
@@ -473,9 +570,9 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         }
     }
 
-    private void sendBleRequest(BaseConnectProvider baseConnectProvider,BluetoothLeRequest bluetoothLeRequest, BluetoothLeResponse response) throws Exception {
+    private void sendBleRequest(BaseConnectProvider baseConnectProvider,BluetoothLeRequest bluetoothLeRequest, BluetoothLeResponse bluetoothLeResponse) throws Exception {
         BluetoothLeConnectProvider connectProvider = (BluetoothLeConnectProvider) baseConnectProvider;
-        connectProvider.sendRequest(bluetoothLeRequest,response,10*1000);
+        connectProvider.sendRequest(bluetoothLeRequest,bluetoothLeResponse,10*1000);
     }
 
 
@@ -508,8 +605,6 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                                 showMsg("status：" + status + ",bluetoothGattServices:" + bluetoothGattServices.size());
                                 if (bluetoothGattServices.size() > 0){
                                     initNotify();
-
-
                                 }
                             }
                         });
@@ -522,6 +617,13 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                         });
 
                     }
+                    //单独监听就不能使用baseConnectProvider.read接口了
+                    /*else if (baseConnectProvider instanceof WifiConnectProvider){
+                        startReadThread((BaseIoConnectProvider)baseConnectProvider);
+                    }else if (baseConnectProvider instanceof BluetoothConnectProvider){
+                        startReadThread((BaseIoConnectProvider)baseConnectProvider);
+
+                    }*/
                 } else {
                     showMsg("设备连接失败:"+ret);
                     if (baseConnectProvider instanceof BluetoothLeConnectProvider){
@@ -541,6 +643,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
             if (v != null){ //收到点击点开才显示日志
                 showMsg("设备断开连接成功");
             }
+            modifyMtuFlag = false;
 
         }
     }
@@ -622,7 +725,7 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
                             //在连接按钮初始化
                             break;
                         }
-                        case BLUETOOTH_Low_Energy: {
+                        case BLUETOOTH_LOW_ENERGY: {
                             bluetoothDevice = extras.getParcelable(EXTRA_DEVICE_ITEM);
                             baseConnectProvider = new BluetoothLeConnectProvider(bluetoothDevice);
                             showMsg("当前选择的蓝牙设备：" + bluetoothDevice.getName() + ":" + bluetoothDevice.getAddress());
@@ -642,17 +745,32 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         super.onDestroy();
         UsbHelper.getInstance().unregisterReceiver();
         BluetoothHelper.getInstance().unregisterReceiver();
-
+        stopReadThread();
         disconnect(null);
+        stopBluetoothService();
+        stopBleService();
+        stopWifiService();
+
+    }
+    private void stopBluetoothService() {
         if (bluetoothServiceIntent != null){
             stopService(bluetoothServiceIntent);
             bluetoothServiceIntent = null;
         }
+    }
+
+    private void stopBleService() {
+        if (bleServiceIntent != null){
+            stopService(bleServiceIntent);
+            bleServiceIntent = null;
+        }
+
+    }
+    private void stopWifiService() {
         if (wifiServiceIntent != null){
             stopService(wifiServiceIntent);
             wifiServiceIntent = null;
         }
-
     }
 
     @Override
@@ -665,6 +783,19 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
     public static void hideKeyBoard(Context context, EditText editText) {
         InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+
+    private ReadThread mReadThread;
+
+    public void startReadThread(BaseIoConnectProvider baseIoConnectProvider) {
+        mReadThread = new ReadThread(baseIoConnectProvider);
+        mReadThread.start();
+    }
+
+    public void stopReadThread() {
+        if (mReadThread != null){
+            mReadThread.close();
+        }
     }
 }
 

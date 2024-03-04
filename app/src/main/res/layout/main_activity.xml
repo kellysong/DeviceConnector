@@ -91,8 +91,28 @@
             android:visibility="gone" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/ll_server"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        >
+
+        <Button
+            android:id="@+id/btn_start_test_server"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="启动本地测试服务" />
+        <Button
+            android:id="@+id/btn_stop_test_server"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="停止本地测试服务" />
+
+    </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/ll_client"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -113,18 +133,7 @@
             android:layout_height="wrap_content"
             android:text="清空" />
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/btn_test_server"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="启动本地测试服务" />
-
-    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -171,11 +180,11 @@
 
             <EditText
                 android:id="@+id/send_text"
-                android:layout_width="0dp"
+                android:layout_width="365dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:inputType="text"
                 android:hint="发送数据"
+                android:inputType="text"
                 android:singleLine="true" />
 
             <ImageButton

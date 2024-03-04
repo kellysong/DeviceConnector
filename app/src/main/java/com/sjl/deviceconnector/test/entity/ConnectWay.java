@@ -15,8 +15,7 @@ public enum ConnectWay {
     USB("Usb"),
     BLUETOOTH("Bluetooth Classic"),
     WIFI("Wifi"),
-    BLUETOOTH_Low_Energy("Bluetooth Low Energy"),
-    ;
+    BLUETOOTH_LOW_ENERGY("Bluetooth Low Energy");
 
     private final String name;
 

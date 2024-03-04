@@ -19,10 +19,13 @@ import com.sjl.core.permission.SpecialPermission;
 import com.sjl.core.util.log.LogUtils;
 import com.sjl.deviceconnector.provider.BluetoothConnectProvider;
 import com.sjl.deviceconnector.test.R;
+import com.sjl.deviceconnector.test.entity.ConnectWay;
 import com.sjl.deviceconnector.test.entity.MessageEvent;
 import com.sjl.deviceconnector.test.util.MessageEventUtils;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +79,8 @@ public class BluetoothService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().register(this);
+
         //防止被杀死
         showNotification();
 
@@ -83,6 +88,7 @@ public class BluetoothService extends Service {
         if (mBluetoothAdapter == null) {
             return;
         }
+        String name = mBluetoothAdapter.getName();
         if (!mBluetoothAdapter.isEnabled()) {
             mBluetoothAdapter.enable();
             new Thread(new Runnable() {
@@ -107,18 +113,23 @@ public class BluetoothService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        LogUtils.w("服务关闭");
+        EventBus.getDefault().unregister(this);
+        for (BluetoothService.ReadThread readThread : mClients) {
+            readThread.close();
+        }
+        mClients.clear();
+        MessageEventUtils.sendLog("蓝牙服务停止运行");
         if (mServerThread != null) {
             mServerThread.close();
         }
     }
+    private CopyOnWriteArrayList<ReadThread> mClients = new CopyOnWriteArrayList<>();
 
     /**
      * 服务端：监听客户端连接线程
      */
     private class ServerThread extends Thread {
         private BluetoothServerSocket mServerSocket;
-        private CopyOnWriteArrayList<ReadThread> mClients = new CopyOnWriteArrayList<>();
 
         public ServerThread() {
 
@@ -193,6 +204,8 @@ public class BluetoothService extends Service {
             try {
                 host = mSocket.getRemoteDevice().getAddress();
                 LogUtils.i("连接的客户端："+mSocket.getRemoteDevice().getName()+","+ host);
+                MessageEventUtils.sendLog("连接的客户端："+mSocket.getRemoteDevice().getName()+","+ host);
+
                 is = mSocket.getInputStream();
                 out = mSocket.getOutputStream();
                 while (stop) {
@@ -202,7 +215,7 @@ public class BluetoothService extends Service {
                            System.arraycopy(buffer, 0, resultData, 0, resultData.length);
                            MessageEventUtils.sendLog("服务端收到客户端发送的数据：" + new String(resultData));
                            String callData =System.currentTimeMillis()+"收到你的数据了";
-                           out.write(callData.getBytes());
+                           send(callData.getBytes());
                        }
                    }
                 }
@@ -213,7 +226,10 @@ public class BluetoothService extends Service {
                 MessageEventUtils.sendLog(host+"断开连接");
             }
         }
-
+        public synchronized void send(byte[] bytes) throws IOException {
+            out.write(bytes);
+            out.flush();
+        }
 
         public void close() {
             this.stop = false;
@@ -239,12 +255,24 @@ public class BluetoothService extends Service {
                 e.printStackTrace();
             }
         }
+
+
     }
 
-    private void callLog(String log) {
-        MessageEvent.Builder<String> stringBuilder = new MessageEvent.Builder<String>();
-        stringBuilder.setCode(1000);
-        stringBuilder.setEvent(log);
-        EventBus.getDefault().post(stringBuilder.create());
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent event) {
+        if (event.getCode() == ConnectWay.BLUETOOTH.ordinal()) {
+            String data = (String) event.getEvent();
+            for (ReadThread readThread : mClients) {
+                try {
+                    readThread.send(data.getBytes());
+
+                    MessageEventUtils.sendLog("发送数据给客户端成功");
+                } catch (Exception e) {
+                    MessageEventUtils.sendLog("发送数据给客户端异常：" + e.getMessage());
+                }
+            }
+        }
     }
+
 }

@@ -12,7 +12,13 @@ import android.os.IBinder;
 import com.sjl.core.util.log.LogUtils;
 import com.sjl.deviceconnector.test.R;
 import com.sjl.deviceconnector.test.app.MyApplication;
+import com.sjl.deviceconnector.test.entity.ConnectWay;
+import com.sjl.deviceconnector.test.entity.MessageEvent;
 import com.sjl.deviceconnector.test.util.MessageEventUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +70,8 @@ public class WifiService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().register(this);
+
         //防止被杀死
         showNotification();
         mServerThread = new ServerThread();
@@ -73,18 +81,24 @@ public class WifiService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        LogUtils.w("服务关闭");
+        EventBus.getDefault().unregister(this);
+        for (WifiService.ReadThread readThread : mClients) {
+            readThread.close();
+        }
+        mClients.clear();
+        MessageEventUtils.sendLog("WiFi服务停止运行");
+
         if (mServerThread != null) {
             mServerThread.close();
         }
     }
+    private final CopyOnWriteArrayList<ReadThread> mClients = new CopyOnWriteArrayList<>();
 
     /**
      * 服务端：监听客户端连接线程
      */
     private class ServerThread extends Thread {
         private ServerSocket mServerSocket;
-        private final CopyOnWriteArrayList<ReadThread> mClients = new CopyOnWriteArrayList<>();
 
         public ServerThread() {
 
@@ -171,8 +185,7 @@ public class WifiService extends Service {
 
                            MessageEventUtils.sendLog("服务端收到客户端发送的数据：" + new String(resultData));
                            String callData = System.currentTimeMillis() + "收到你的数据了";
-                           out.write(callData.getBytes());
-
+                           send(callData.getBytes());
                        }
                    }
                 }
@@ -184,6 +197,10 @@ public class WifiService extends Service {
             }
         }
 
+        public synchronized void send(byte[] bytes) throws IOException {
+            out.write(bytes);
+            out.flush();
+        }
 
         public void close() {
             this.stop = false;
@@ -210,6 +227,19 @@ public class WifiService extends Service {
             }
         }
     }
-
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent event) {
+        if (event.getCode() == ConnectWay.WIFI.ordinal()) {
+            String data = (String) event.getEvent();
+            for (WifiService.ReadThread readThread : mClients) {
+                try {
+                    readThread.send(data.getBytes());
+                    MessageEventUtils.sendLog("发送数据给客户端成功");
+                } catch (Exception e) {
+                    MessageEventUtils.sendLog("发送数据给客户端异常：" + e.getMessage());
+                }
+            }
+        }
+    }
 
 }

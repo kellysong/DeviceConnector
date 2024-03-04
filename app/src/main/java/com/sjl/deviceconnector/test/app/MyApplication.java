@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.multidex.MultiDex;
+import me.jessyan.autosize.AutoSizeConfig;
 
 /**
  * TODO
@@ -36,6 +37,12 @@ public class MyApplication extends BaseApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        int sw = getResources().getConfiguration().smallestScreenWidthDp;
+        if (sw >=200 && sw <= 500) {
+            //大部分屏幕是360
+            sw= 360;
+        }
+        AutoSizeConfig.getInstance().setDesignWidthInDp(sw);
         initLogConfig(true);
         DeviceContext.init(this,true);
     }

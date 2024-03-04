@@ -38,7 +38,7 @@ public class BluetoothLowEnergyScanner extends AbstractBluetoothScanner {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             BluetoothLeScanner bluetoothLeScanner = BluetoothUtils.getBluetoothLeScanner();
             //创建ScanSettings的build对象用于设置参数
-            ScanSettings.Builder builder = new ScanSettings.Builder()
+            /*ScanSettings.Builder builder = new ScanSettings.Builder()
                     //设置低功耗模式
                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
             //android 6.0添加设置回调类型、匹配模式等
@@ -54,7 +54,7 @@ public class BluetoothLowEnergyScanner extends AbstractBluetoothScanner {
                 //不开启批处理扫描模式,即不回调onBatchScanResults
                 builder.setReportDelay(0L);
             }
-            builder.build();
+            ScanSettings scanSettings = builder.build();*/
             bluetoothLeScanner.startScan(mScanCallback);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             BluetoothUtils.getBluetoothAdapter().startLeScan(mLeScanCallback);
@@ -96,7 +96,7 @@ public class BluetoothLowEnergyScanner extends AbstractBluetoothScanner {
 
         @Override
         public void onBatchScanResults(List<ScanResult> results) {
-
+            LogUtils.e("onBatchScanResults：" + results.size());
         }
 
         @Override
