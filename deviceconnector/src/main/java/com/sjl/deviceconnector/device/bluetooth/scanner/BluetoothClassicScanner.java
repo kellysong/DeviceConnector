@@ -50,7 +50,7 @@ public class BluetoothClassicScanner extends AbstractBluetoothScanner implements
     public void stopScan() {
         unregisterReceiver();
         BluetoothAdapter bluetoothAdapter = BluetoothUtils.getBluetoothAdapter();
-        if (bluetoothAdapter.isDiscovering()) {
+        if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         }
         notifyScanFinish();

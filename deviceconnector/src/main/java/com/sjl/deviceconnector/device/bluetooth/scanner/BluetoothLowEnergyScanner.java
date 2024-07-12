@@ -68,9 +68,15 @@ public class BluetoothLowEnergyScanner extends AbstractBluetoothScanner {
     public void stopScan() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             BluetoothLeScanner bluetoothLeScanner = BluetoothUtils.getBluetoothLeScanner();
-            bluetoothLeScanner.stopScan(mScanCallback);
+            if (bluetoothLeScanner != null){
+                bluetoothLeScanner.stopScan(mScanCallback);
+            }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            BluetoothUtils.getBluetoothAdapter().stopLeScan(mLeScanCallback);
+            BluetoothAdapter bluetoothAdapter = BluetoothUtils.getBluetoothAdapter();
+            if (bluetoothAdapter != null){
+                bluetoothAdapter.stopLeScan(mLeScanCallback);
+            }
+
         }
         notifyScanFinish();
         removeListener();

@@ -1,4 +1,4 @@
-package com.sjl.scanner;
+package com.sjl.deviceconnector;
 
 import org.junit.Test;
 
