@@ -40,7 +40,7 @@ DeviceConnector框架上层调用一致，底层不同实现，方便使用者�
           implementation 'androidx.annotation:annotation:1.2.0'
 
           //1.1.0之后
-		  implementation 'com.github.kellysong:DeviceConnector:1.1.3'
+		  implementation 'com.github.kellysong:DeviceConnector:1.1.4'
 	}
 
 # API调用
