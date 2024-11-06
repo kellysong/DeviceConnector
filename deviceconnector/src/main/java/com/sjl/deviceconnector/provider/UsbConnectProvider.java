@@ -103,11 +103,23 @@ public class UsbConnectProvider extends BaseConnectProvider {
      *
      * @return
      */
-    private int getDeviceInterface() {
+    protected int getDeviceInterface() {
         int interfaceCount = mUsbDevice.getInterfaceCount();
         LogUtils.i("interfaceCounts : " + interfaceCount);
         if (interfaceCount > 0) {
-            mUsbInterface = mUsbDevice.getInterface(0);//获取设备接口，一般都是一个接口
+            //            mUsbInterface = mUsbDevice.getInterface(0);//获取设备接口，一般都是一个接口
+
+            UsbInterface usbInterface;
+            for (int interfaceIndex = 0; interfaceIndex < interfaceCount; interfaceIndex++) {
+                usbInterface = mUsbDevice.getInterface(interfaceIndex);
+                if (usbInterface.getEndpointCount() == 1) {
+                    continue;
+                }
+                mUsbInterface = usbInterface;
+            }
+            if (mUsbInterface == null) {
+                return ErrorCode.ERROR_FAIL;
+            }
             LogUtils.i("成功获得设备接口:" + mUsbInterface.getId());
             return ErrorCode.ERROR_OK;
         } else {
@@ -173,18 +185,6 @@ public class UsbConnectProvider extends BaseConnectProvider {
                         mUsbEndpointIn = ep;
                         maxReadBuffer = mUsbEndpointIn.getMaxPacketSize();
                         LogUtils.i("找到BulkEndpointIn:" + "index:" + i + ",使用端点号：" + mUsbEndpointIn.getEndpointNumber() + ",mUsbEndpointIn:" + mUsbEndpointIn);
-                    }
-                    break;
-                case UsbConstants.USB_ENDPOINT_XFER_INT:// 中断传输
-                    if (ep.getDirection() == UsbConstants.USB_DIR_OUT) {//输出
-                        mUsbEndpointOut = ep;
-                        maxWriteBuffer = mUsbEndpointOut.getMaxPacketSize();
-                        LogUtils.i("找到InterruptEndpointOut:" + "index:" + i + ",使用端点号：" + mUsbEndpointOut.getEndpointNumber() + ",mUsbEndpointOut:" + mUsbEndpointOut);
-                    }
-                    if (ep.getDirection() == UsbConstants.USB_DIR_IN) {
-                        mUsbEndpointIn = ep;
-                        maxReadBuffer = mUsbEndpointIn.getMaxPacketSize();
-                        LogUtils.i("找到InterruptEndpointIn:" + "index:" + i + ",使用端点号：" + mUsbEndpointIn.getEndpointNumber() + ",mUsbEndpointIn:" + mUsbEndpointIn);
                     }
                     break;
                 default:
@@ -298,4 +298,16 @@ public class UsbConnectProvider extends BaseConnectProvider {
     public int getMaxReadBuffer() {
         return maxReadBuffer;
     }
+
+    public UsbInterface getUsbInterface() {
+        return mUsbInterface;
+    }
+
+    public UsbEndpoint getWriteEndpoint() {
+        return mUsbEndpointOut;
+    }
+    public UsbEndpoint getReadEndpoint(){
+        return mUsbEndpointIn;
+    }
+
 }

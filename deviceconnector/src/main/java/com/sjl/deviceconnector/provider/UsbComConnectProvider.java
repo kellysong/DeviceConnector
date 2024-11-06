@@ -166,6 +166,10 @@ public class UsbComConnectProvider extends BaseConnectProvider {
         }
     }
 
+    public UsbSerialPort getUsbSerialPort() {
+        return usbSerialPort;
+    }
+
     public int getMaxWriteBuffer() {
         return usbSerialPort.getWriteEndpoint().getMaxPacketSize();
     }
@@ -173,4 +177,6 @@ public class UsbComConnectProvider extends BaseConnectProvider {
     public int getMaxReadBuffer() {
         return usbSerialPort.getReadEndpoint().getMaxPacketSize();
     }
+
+
 }
