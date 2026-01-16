@@ -236,12 +236,7 @@ public class BleService extends Service {
                 }
             }
 
-            /**
-             * 当周边添加到服务成功时的回调
-             * @param status Returns {@link BluetoothGatt#GATT_SUCCESS} if the service was added
-             * successfully.
-             * @param service The service that has been added
-             */
+
             @Override
             public void onServiceAdded(int status, BluetoothGattService service) {
                 super.onServiceAdded(status, service);
@@ -249,13 +244,6 @@ public class BleService extends Service {
                 MessageEventUtils.sendLog("ble服务启动成功");
             }
 
-            /**
-             * 远程设备读取本地特征
-             * @param device The remote device that has requested the read operation
-             * @param requestId The Id of the request
-             * @param offset Offset into the value of the characteristic
-             * @param characteristic Characteristic to be read
-             */
             @Override
             public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
@@ -268,16 +256,7 @@ public class BleService extends Service {
 
             }
 
-            /**
-             * 远程设备写本地特征
-             * @param device The remote device that has requested the write operation
-             * @param requestId The Id of the request
-             * @param characteristic Characteristic to be written to.
-             * @param preparedWrite true, if this write operation should be queued for later execution.
-             * @param responseNeeded true, if the remote device requires a response
-             * @param offset The offset given for the value
-             * @param value The value the client wants to assign to the characteristic
-             */
+
             @Override
             public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId, BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
                 super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value);
@@ -294,13 +273,6 @@ public class BleService extends Service {
 
             }
 
-            /**
-             * 远程设备读取本地描述
-             * @param device The remote device that has requested the read operation
-             * @param requestId The Id of the request
-             * @param offset Offset into the value of the characteristic
-             * @param descriptor Descriptor to be read
-             */
             @Override
             public void onDescriptorReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattDescriptor descriptor) {
                 super.onDescriptorReadRequest(device, requestId, offset, descriptor);
@@ -308,16 +280,7 @@ public class BleService extends Service {
                 mBluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
             }
 
-            /**
-             * 远程设备写入本地描述
-             * @param device The remote device that has requested the write operation
-             * @param requestId The Id of the request
-             * @param descriptor Descriptor to be written to.
-             * @param preparedWrite true, if this write operation should be queued for later execution.
-             * @param responseNeeded true, if the remote device requires a response
-             * @param offset The offset given for the value
-             * @param value The value the client wants to assign to the descriptor
-             */
+
             @Override
             public void onDescriptorWriteRequest(BluetoothDevice device, int requestId, BluetoothGattDescriptor descriptor, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
                 super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value);
@@ -325,12 +288,7 @@ public class BleService extends Service {
                 mBluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, null);
             }
 
-            /**
-             * 执行本地设备所有挂起的写操作
-             * @param device The remote device that has requested the write operations
-             * @param requestId The Id of the request
-             * @param execute Whether the pending writes should be executed (true) or cancelled (false)
-             */
+
             @Override
             public void onExecuteWrite(BluetoothDevice device, int requestId, boolean execute) {
                 super.onExecuteWrite(device, requestId, execute);
@@ -338,22 +296,14 @@ public class BleService extends Service {
                 mBluetoothGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
             }
 
-            /**
-             * 当通知发送到远程设备时的回调
-             * @param device The remote device the notification has been sent to
-             * @param status {@link BluetoothGatt#GATT_SUCCESS} if the operation was successful
-             */
+
             @Override
             public void onNotificationSent(BluetoothDevice device, int status) {
                 super.onNotificationSent(device, status);
                 LogUtils.i("通知发送成功");
             }
 
-            /**
-             * MTU更改时的回调
-             * @param device The remote device that requested the MTU change
-             * @param mtu The new MTU size
-             */
+
             @Override
             public void onMtuChanged(BluetoothDevice device, int mtu) {
                 super.onMtuChanged(device, mtu);

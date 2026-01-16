@@ -66,6 +66,7 @@ public class SocketConnectProvider extends BaseIoConnectProvider {
 
     @Override
     public void close() {
+        super.close();
         mConnectState = false;
         close(getOutputStream());
         close(getInputStream());

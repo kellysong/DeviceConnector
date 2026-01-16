@@ -33,10 +33,12 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
-    implementation 'org.jetbrains:annotations:15.0'
     api 'com.github.mik3y:usb-serial-for-android:3.4.3'
-    api 'com.github.licheedev:Android-SerialPort-API:2.0.0'
-    api 'androidx.annotation:annotation:1.2.0'
+//    api 'com.github.mik3y:usb-serial-for-android:3.9.0'
+
+//    api 'com.github.licheedev:Android-SerialPort-API:2.0.0'
+    //16kb页支持
+    api 'com.licheedev:android-serialport:2.1.5'
 
 
 }

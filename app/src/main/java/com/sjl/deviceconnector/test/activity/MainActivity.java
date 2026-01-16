@@ -38,6 +38,7 @@ import com.sjl.deviceconnector.device.bluetooth.ble.request.NotifyRequest;
 import com.sjl.deviceconnector.device.bluetooth.ble.response.BluetoothLeResponse;
 import com.sjl.deviceconnector.device.usb.UsbHelper;
 import com.sjl.deviceconnector.listener.ConnectedListener;
+import com.sjl.deviceconnector.listener.DataReceivedListener;
 import com.sjl.deviceconnector.listener.UsbPlugListener;
 import com.sjl.deviceconnector.provider.BaseConnectProvider;
 import com.sjl.deviceconnector.provider.BaseIoConnectProvider;
@@ -470,7 +471,15 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
                     showMsg("发：" + sendDataStr,false);
                     byte[] buffer = new byte[256];
-                    int read = baseConnectProvider.read(sendData, buffer, 5 * 1000);
+                    int read;
+              /*      if (baseConnectProvider instanceof BaseIoConnectProvider){
+                        read = ((BaseIoConnectProvider) baseConnectProvider).readBlocking(sendData, buffer, 5 * 1000);
+                    }else {
+                        read = baseConnectProvider.read(sendData, buffer, 5 * 1000);
+                    }*/
+
+                    read = baseConnectProvider.read(sendData, buffer, 5 * 1000);
+
                     if (read > 0) {
                         byte[] resultData = new byte[read];
                         System.arraycopy(buffer, 0, resultData, 0, read);
@@ -618,11 +627,8 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
 
                     }
                     //单独监听就不能使用baseConnectProvider.read接口了
-                    /*else if (baseConnectProvider instanceof WifiConnectProvider){
+               /*     else if (baseConnectProvider instanceof BaseIoConnectProvider){
                         startReadThread((BaseIoConnectProvider)baseConnectProvider);
-                    }else if (baseConnectProvider instanceof BluetoothConnectProvider){
-                        startReadThread((BaseIoConnectProvider)baseConnectProvider);
-
                     }*/
                 } else {
                     showMsg("设备连接失败:"+ret);
@@ -745,7 +751,6 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         super.onDestroy();
         UsbHelper.getInstance().unregisterReceiver();
         BluetoothHelper.getInstance().unregisterReceiver();
-        stopReadThread();
         disconnect(null);
         stopBluetoothService();
         stopBleService();
@@ -785,17 +790,17 @@ public class MainActivity extends BaseActivity<MainActivityBinding> implements V
         inputMethodManager.hideSoftInputFromWindow(editText.getWindowToken(), 0);
     }
 
-    private ReadThread mReadThread;
 
     public void startReadThread(BaseIoConnectProvider baseIoConnectProvider) {
-        mReadThread = new ReadThread(baseIoConnectProvider);
-        mReadThread.start();
+        baseIoConnectProvider.startReadThread(BaseIoConnectProvider.SPLICING);
+        baseIoConnectProvider.setDataReceivedListener(new DataReceivedListener() {
+            @Override
+            public void onDataReceived(byte[] data) {
+                showMsg("接收到数据:" + ByteUtils.byteArrToHexString(data));
+            }
+        });
     }
 
-    public void stopReadThread() {
-        if (mReadThread != null){
-            mReadThread.close();
-        }
-    }
+
 }
 

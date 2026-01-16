@@ -29,7 +29,7 @@ public abstract class BaseConnectProvider implements IConnectProvider {
     /**
      * 每次读取等待超时时间，防止漏读,单位：毫秒
      */
-    private int readWaitTimeout = 100;
+    protected int readWaitTimeout = 100;
 
     @Override
     public int getState() {

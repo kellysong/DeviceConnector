@@ -12,12 +12,14 @@ import java.io.InputStream;
 /**
  * 客户端监听服务端数据的线程
  *<p>注意：单独监听就不能使用baseConnectProvider.read接口</p>
+ * @see BaseIoConnectProvider 内部已经支持监听服务端数据
  * @author Kelly
  * @version 1.0.0
  * @filename ReadThread
  * @time 2024/3/4 18:23
  * @copyright(C) 2024 song
  */
+@Deprecated
 public class ReadThread extends Thread {
     private BaseIoConnectProvider connectProvider;
     private boolean running;

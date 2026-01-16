@@ -96,6 +96,7 @@ public class BluetoothConnectProvider extends BaseIoConnectProvider {
 
     @Override
     public void close() {
+        super.close();
         mConnectState = false;
         close(getOutputStream());
         close(getInputStream());

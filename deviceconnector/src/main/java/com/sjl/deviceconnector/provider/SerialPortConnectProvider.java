@@ -55,6 +55,7 @@ public class SerialPortConnectProvider extends BaseIoConnectProvider {
 
     @Override
     public void close() {
+        super.close();
         mConnectState = false;
         close(getOutputStream());
         close(getInputStream());
