@@ -72,10 +72,6 @@ public class BluetoothHelper implements ReceiverObservable {
      * @param scanTime 单位毫秒
      */
     public void setScanTime(int scanTime) {
-        if (scanTime < 2 * 1000) {
-            this.mScanTime = DEFAULT_SCAN_TIME;
-            return;
-        }
         this.mScanTime = scanTime;
     }
 
@@ -98,12 +94,15 @@ public class BluetoothHelper implements ReceiverObservable {
         bluetoothScanner.setBluetoothScanListener(bluetoothScanListener);
         bluetoothScanner.setAddress(address);
         bluetoothScanner.startScan();
-        DeviceContext.mainHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                bluetoothScanner.stopScan();
-            }
-        }, mScanTime);
+        if (mScanTime > 0){
+            DeviceContext.mainHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    bluetoothScanner.stopScan();
+                }
+            }, mScanTime);
+        }
+
     }
 
 
@@ -115,6 +114,9 @@ public class BluetoothHelper implements ReceiverObservable {
         bluetoothScanner.stopScan();
     }
 
+    public AbstractBluetoothScanner getBluetoothScanner() {
+        return bluetoothScanner;
+    }
 
     @Override
     public void registerReceiver() {

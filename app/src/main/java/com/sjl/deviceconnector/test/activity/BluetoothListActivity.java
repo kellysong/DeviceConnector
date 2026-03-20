@@ -15,6 +15,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.listener.OnItemChildClickListener;
 import com.chad.library.adapter.base.listener.OnItemClickListener;
 import com.chad.library.adapter.base.listener.OnItemLongClickListener;
+import com.sjl.core.util.log.LogUtils;
 import com.sjl.deviceconnector.device.bluetooth.ble.AdStructureParser;
 import com.sjl.deviceconnector.device.bluetooth.scanner.BluetoothClassicScanner;
 import com.sjl.deviceconnector.device.bluetooth.BluetoothHelper;
@@ -182,6 +183,8 @@ public class BluetoothListActivity extends BaseActivity<BluetoothListActivityBin
             @Override
             public void onDeviceFound(BluetoothScanResult bluetoothScanResult) {
                 mBluetoothListAdapter.addNewData(bluetoothScanResult);
+                mBluetoothListAdapter.addNewData(bluetoothScanResult);
+
             }
 
             @Override
@@ -192,6 +195,31 @@ public class BluetoothListActivity extends BaseActivity<BluetoothListActivityBin
                 }
             }
         });
+        //扫描指定蓝牙设备
+       /* String targetAddress = "9B:B3:00:09:38:31";
+        instance.startScan(targetAddress,new BluetoothScanListener() {
+
+            @Override
+            public void onDeviceFound(BluetoothScanResult bluetoothScanResult) {
+                mBluetoothListAdapter.addNewData(bluetoothScanResult);
+                BluetoothDevice device = bluetoothScanResult.getDevice();
+                String address = device.getAddress();
+                String name = device.getName();
+                LogUtils.i("name:" + name + ",address:" + address);
+                if (address.equals(targetAddress)) {
+                    LogUtils.i("扫描到目标蓝牙设备");
+                    instance.stopScan();
+                }
+            }
+
+            @Override
+            public void onScanFinish() {
+                if (!isDestroy(BluetoothListActivity.this)){
+                    Toast.makeText(mContext, "蓝牙扫描完毕", Toast.LENGTH_SHORT).show();
+                    viewBinding.swipeRefreshLayout.setRefreshing(false);
+                }
+            }
+        });*/
     }
 
 
